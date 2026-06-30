@@ -1,0 +1,33 @@
+{
+  "settings": {
+    "crop_pad": 0.8,
+    "loose_iou": 0.05,
+    "strict_iou": 0.18,
+    "time_pad": 1.0,
+    "strict_max_center_area": 0.12
+  },
+  "sets": [
+    {
+      "label": "train",
+      "plans_json": "results/attention_iter/baseline_train_plans.json",
+      "split_csv": "/net/ivcfs5/mnt/data/wqwang/yuwen/Quality_Project/Human_Data/eval/splits/train.csv",
+      "total": 25,
+      "targets": 114,
+      "loose_spatial_hits": 24,
+      "loose_st_hits": 24,
+      "strict_spatial_hits": 23,
+      "strict_st_hits": 22
+    },
+    {
+      "label": "heldout",
+      "plans_json": "results/attention_iter/baseline_heldout_plans.json",
+      "split_csv": "/net/ivcfs5/mnt/data/wqwang/yuwen/Quality_Project/Human_Data/eval/splits/heldout.csv",
+      "total": 19,
+      "targets": 92,
+      "loose_spatial_hits": 19,
+      "loose_st_hits": 19,
+      "strict_spatial_hits": 18,
+      "strict_st_hits": 17
+    }
+  ]
+}

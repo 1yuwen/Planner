@@ -1,0 +1,2231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Attention Planner Viewer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #5f6b7a;
+      --line: #d8dee6;
+      --ok: #0f7b42;
+      --miss: #b42318;
+      --unknown: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
+    header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--line); padding: 14px 20px; }
+    header h1 { margin: 0 0 10px; font-size: 20px; }
+    .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    input[type="search"] { width: min(520px, 80vw); padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
+    main { padding: 18px 20px 40px; }
+    .summary { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+    .summary-card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 220px; }
+    .summary-card h3, .summary-card p { margin: 4px 0; }
+    .set > h1 { font-size: 18px; margin: 20px 0 10px; }
+    .case { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin: 14px 0; padding: 14px; }
+    .case.strict-miss { border-left: 5px solid var(--miss); }
+    .case-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .case h2 { margin: 0; font-size: 18px; }
+    .reason { font-weight: 600; color: var(--muted); }
+    .badges { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+    .badge { border-radius: 999px; padding: 3px 8px; font-size: 12px; color: white; }
+    .badge.ok { background: var(--ok); }
+    .badge.miss { background: var(--miss); }
+    .badge.unknown { background: var(--unknown); }
+    .scene { color: var(--muted); margin: 8px 0 12px; }
+    .compare { display: grid; grid-template-columns: minmax(260px, 360px) 1fr; gap: 16px; align-items: start; }
+    h3 { margin: 0 0 8px; font-size: 15px; }
+    h4 { margin: 0 0 4px; font-size: 14px; }
+    video { width: 100%; max-height: 280px; background: #111; border-radius: 6px; border: 1px solid var(--line); }
+    .target { display: grid; grid-template-columns: minmax(220px, 360px) minmax(240px, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+    .target:first-of-type { border-top: 0; padding-top: 0; }
+    .target p { margin: 4px 0; }
+    .small { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .human p { font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .missing { padding: 24px; background: #fee2e2; color: var(--miss); border-radius: 6px; }
+    @media (max-width: 900px) {
+      .compare, .target { grid-template-columns: 1fr; }
+      .badges { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Attention Planner Viewer</h1>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search video, reason, target, sam query">
+      <label><input id="missOnly" type="checkbox"> strict misses only</label>
+    </div>
+  </header>
+  <main>
+    <section class="summary"><div class='summary-card'><h3>train</h3><p><b>GT</b> 25 &nbsp; <b>targets</b> 114</p><p><b>loose ST</b> 24/25 (96%)</p><p><b>strict ST</b> 22/25 (88%)</p></div><div class='summary-card'><h3>heldout</h3><p><b>GT</b> 19 &nbsp; <b>targets</b> 92</p><p><b>loose ST</b> 19/19 (100%)</p><p><b>strict ST</b> 17/19 (89%)</p></div></section>
+    <section class='set'><h1>train</h1><article class='case' data-video='fake_004' data-reason='Hand distortion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_004</h2>
+<div class='reason'>Hand distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Three girls in pajamas sit on a bed; one whispers a secret, causing laughter before the central girl&#x27;s expression turns serious.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_004/human__box1__Hand_distortion.mp4'></video>
+<p><b>bbox</b> [0.402, 0.526, 0.624, 0.808]<br><b>time</b> [3.000, 5.400]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. middle_girl_face</h4><p>The face of the central girl in the pink silk pajama top, tracking her changing expressions.</p>
+<p class='small'><b>sam_queries</b> [&quot;face of girl in pink pajamas&quot;, &quot;center girl face&quot;]<br><b>bbox</b> [0.350, 0.150, 0.650, 0.500]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.000 <b>area</b> 0.105 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_004/target_01__middle_girl_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. right_girl_whisper</h4><p>The girl on the right in striped pajamas leaning in to whisper, including her hand near her mouth.</p>
+<p class='small'><b>sam_queries</b> [&quot;girl in striped pajamas&quot;, &quot;hand near mouth&quot;, &quot;right girl face&quot;]<br><b>bbox</b> [0.600, 0.100, 0.900, 0.600]<br><b>time</b> [0.000, 3.000]<br><b>IoU</b> 0.008 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_004/target_02__right_girl_whisper.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. left_girl_phone_hands</h4><p>The hands of the girl on the left in dark pajamas holding a red smartphone.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands holding red phone&quot;, &quot;red smartphone&quot;, &quot;left girl hands&quot;]<br><b>bbox</b> [0.100, 0.500, 0.300, 0.800]<br><b>time</b> [0.000, 6.000]<br><b>IoU</b> 0.000 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_004/target_03__left_girl_phone_hands.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. middle_girl_hands</h4><p>The hands of the central girl, resting on the pink pillow and then raised during her reaction.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands on pink pillow&quot;, &quot;raised hands&quot;, &quot;center girl hands&quot;]<br><b>bbox</b> [0.350, 0.600, 0.650, 0.900]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.436 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_004/target_04__middle_girl_hands.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. background_photos</h4><p>The collage of photos pinned to the wall on the right side.</p>
+<p class='small'><b>sam_queries</b> [&quot;photos on wall&quot;, &quot;picture collage&quot;]<br><b>bbox</b> [0.800, 0.000, 1.000, 0.400]<br><b>time</b> [0.000, 6.000]<br><b>IoU</b> 0.000 <b>area</b> 0.080 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_004/target_05__background_photos.mp4'></video>
+</div>
+</section></div>
+</article><article class='case strict-miss' data-video='fake_024' data-reason='Unnatural action' data-strict-miss='true'>
+<div class='case-head'>
+<h2>fake_024</h2>
+<div class='reason'>Unnatural action</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge miss'>strict ST: miss</span>
+</div></div>
+<p class='scene'>A woman leans against the outside of a white car while a man sits inside; they eventually look at each other and smile.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_024/human__box1__Unnatural_action.mp4'></video>
+<p><b>bbox</b> [0.004, 0.328, 0.302, 1.000]<br><b>time</b> [6.000, 10.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. woman_face</h4><p>The face of the woman leaning against the car, tracking her expressions.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman&#x27;s face&quot;, &quot;face of person in white tank top&quot;]<br><b>bbox</b> [0.050, 0.100, 0.250, 0.400]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.059 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_024/target_01__woman_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. man_face</h4><p>The face of the man sitting inside the car, visible through the window.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s face&quot;, &quot;face of person inside car&quot;, &quot;bearded man&quot;]<br><b>bbox</b> [0.250, 0.200, 0.450, 0.500]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.035 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_024/target_02__man_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. woman_hand_cigarette</h4><p>The woman&#x27;s hand holding a cigarette, resting near the edge of the frame.</p>
+<p class='small'><b>sam_queries</b> [&quot;hand holding cigarette&quot;, &quot;woman&#x27;s hand&quot;]<br><b>bbox</b> [0.000, 0.400, 0.100, 0.600]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.096 <b>area</b> 0.020 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_024/target_03__woman_hand_cigarette.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. car_exterior</h4><p>The side of the white car, including the door, window frame, and surface details.</p>
+<p class='small'><b>sam_queries</b> [&quot;white car&quot;, &quot;car door&quot;, &quot;car window frame&quot;]<br><b>bbox</b> [0.100, 0.000, 1.000, 1.000]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.140 <b>area</b> 0.900 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_024/target_04__car_exterior.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_025' data-reason='Object merging' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_025</h2>
+<div class='reason'>Object merging</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A female tennis player in white walks across a grass court while bouncing a tennis ball with her racket, with a scoreboard, ball boys, and a crowd in the background.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_025/human__box1__Object_merging.mp4'></video>
+<p><b>bbox</b> [0.229, 0.271, 0.438, 0.904]<br><b>time</b> [7.950, 9.200]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. main_player</h4><p>The female tennis player wearing a white outfit, walking and bouncing the ball.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in white tennis outfit&quot;, &quot;tennis player&quot;, &quot;person in white&quot;]<br><b>bbox</b> [0.300, 0.200, 0.700, 0.950]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.253 <b>area</b> 0.300 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_025/target_01__main_player.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. racket_ball_interaction</h4><p>The tennis racket held by the player and the yellow ball(s) being bounced.</p>
+<p class='small'><b>sam_queries</b> [&quot;tennis racket&quot;, &quot;yellow tennis ball&quot;, &quot;racket strings&quot;]<br><b>bbox</b> [0.200, 0.400, 0.600, 0.900]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.460 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_025/target_02__racket_ball_interaction.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. scoreboard_display</h4><p>The dark green scoreboard with white and yellow text, numbers, and a clock face.</p>
+<p class='small'><b>sam_queries</b> [&quot;green scoreboard&quot;, &quot;text on scoreboard&quot;, &quot;clock face&quot;]<br><b>bbox</b> [0.000, 0.250, 0.900, 0.600]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.182 <b>area</b> 0.315 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_025/target_03__scoreboard_display.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. running_ball_boy</h4><p>The ball boy wearing a blue striped shirt running across the background.</p>
+<p class='small'><b>sam_queries</b> [&quot;boy running&quot;, &quot;person in blue striped shirt&quot;]<br><b>bbox</b> [0.600, 0.400, 1.000, 0.800]<br><b>time</b> [3.250, 7.000]<br><b>IoU</b> 0.000 <b>area</b> 0.160 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_025/target_04__running_ball_boy.mp4'></video>
+</div>
+</section></div>
+</article><article class='case strict-miss' data-video='fake_047' data-reason='Face distortion' data-strict-miss='true'>
+<div class='case-head'>
+<h2>fake_047</h2>
+<div class='reason'>Face distortion</div>
+<div class='badges'>
+<span class='badge miss'>loose ST: miss</span>
+<span class='badge miss'>strict ST: miss</span>
+</div></div>
+<p class='scene'>Children playing among balloons on a rug, with a girl in a pink dress entering and dancing.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_047/human__box1__Face_distortion.mp4'></video>
+<p><b>bbox</b> [0.366, 0.221, 0.509, 0.438]<br><b>time</b> [3.000, 5.000]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. older_girl_pink_dress</h4><p>The older girl wearing a pink dress who enters from the right, dances, and sits down.</p>
+<p class='small'><b>sam_queries</b> [&quot;girl in pink dress&quot;, &quot;person dancing&quot;]<br><b>bbox</b> [0.500, 0.200, 0.900, 0.900]<br><b>time</b> [2.000, 8.750]<br><b>IoU</b> 0.007 <b>area</b> 0.280 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_01__older_girl_pink_dress.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. mirror_reflection</h4><p>The large mirror on the left wall reflecting the children and balloons.</p>
+<p class='small'><b>sam_queries</b> [&quot;mirror reflection&quot;, &quot;reflection of children&quot;]<br><b>bbox</b> [0.000, 0.000, 0.400, 0.800]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.021 <b>area</b> 0.320 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_02__mirror_reflection.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. boy_blue_shirt_and_box</h4><p>The boy in the blue shirt sitting in the center, holding and looking at a white box.</p>
+<p class='small'><b>sam_queries</b> [&quot;boy in blue shirt&quot;, &quot;white box held by boy&quot;]<br><b>bbox</b> [0.400, 0.400, 0.600, 0.700]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.047 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_03__boy_blue_shirt_and_box.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. toddler_girl_white_dress</h4><p>The young girl in a white dress sitting on the right side of the rug.</p>
+<p class='small'><b>sam_queries</b> [&quot;toddler in white dress&quot;, &quot;girl with pink bow&quot;]<br><b>bbox</b> [0.600, 0.400, 0.800, 0.800]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.000 <b>area</b> 0.080 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_04__toddler_girl_white_dress.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. balloons_on_rug</h4><p>The collection of pink and white balloons scattered on the fluffy rug.</p>
+<p class='small'><b>sam_queries</b> [&quot;pink and white balloons&quot;, &quot;balloons on rug&quot;]<br><b>bbox</b> [0.100, 0.500, 0.900, 1.000]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.000 <b>area</b> 0.400 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_05__balloons_on_rug.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_047' data-reason='Mirror shadow is not correct' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_047</h2>
+<div class='reason'>Mirror shadow is not correct</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Children playing among balloons on a rug, with a girl in a pink dress entering and dancing.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_047/human__box2__Mirror_shadow_is_not_correct.mp4'></video>
+<p><b>bbox</b> [0.030, 0.012, 0.773, 0.853]<br><b>time</b> [8.958, 8.958]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. older_girl_pink_dress</h4><p>The older girl wearing a pink dress who enters from the right, dances, and sits down.</p>
+<p class='small'><b>sam_queries</b> [&quot;girl in pink dress&quot;, &quot;person dancing&quot;]<br><b>bbox</b> [0.500, 0.200, 0.900, 0.900]<br><b>time</b> [2.000, 8.750]<br><b>IoU</b> 0.245 <b>area</b> 0.280 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_01__older_girl_pink_dress.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. mirror_reflection</h4><p>The large mirror on the left wall reflecting the children and balloons.</p>
+<p class='small'><b>sam_queries</b> [&quot;mirror reflection&quot;, &quot;reflection of children&quot;]<br><b>bbox</b> [0.000, 0.000, 0.400, 0.800]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.446 <b>area</b> 0.320 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_02__mirror_reflection.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. boy_blue_shirt_and_box</h4><p>The boy in the blue shirt sitting in the center, holding and looking at a white box.</p>
+<p class='small'><b>sam_queries</b> [&quot;boy in blue shirt&quot;, &quot;white box held by boy&quot;]<br><b>bbox</b> [0.400, 0.400, 0.600, 0.700]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.096 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_03__boy_blue_shirt_and_box.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. toddler_girl_white_dress</h4><p>The young girl in a white dress sitting on the right side of the rug.</p>
+<p class='small'><b>sam_queries</b> [&quot;toddler in white dress&quot;, &quot;girl with pink bow&quot;]<br><b>bbox</b> [0.600, 0.400, 0.800, 0.800]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.109 <b>area</b> 0.080 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_04__toddler_girl_white_dress.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. balloons_on_rug</h4><p>The collection of pink and white balloons scattered on the fluffy rug.</p>
+<p class='small'><b>sam_queries</b> [&quot;pink and white balloons&quot;, &quot;balloons on rug&quot;]<br><b>bbox</b> [0.100, 0.500, 0.900, 1.000]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.302 <b>area</b> 0.400 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_047/target_05__balloons_on_rug.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_064' data-reason='Unnatural motion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_064</h2>
+<div class='reason'>Unnatural motion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Two people with backpacks run up a grassy hill towards a plume of dark smoke.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_064/human__box1__Unnatural_motion.mp4'></video>
+<p><b>bbox</b> [0.251, 0.327, 0.702, 0.908]<br><b>time</b> [5.917, 5.917]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. left_person</h4><p>Person on the left with a yellow backpack running uphill.</p>
+<p class='small'><b>sam_queries</b> [&quot;person with yellow backpack&quot;, &quot;left person running&quot;]<br><b>bbox</b> [0.250, 0.450, 0.450, 0.850]<br><b>time</b> [0.000, 5.750]<br><b>IoU</b> 0.304 <b>area</b> 0.080 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_064/target_01__left_person.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. right_person</h4><p>Person on the right with an orange backpack running uphill.</p>
+<p class='small'><b>sam_queries</b> [&quot;person with orange backpack&quot;, &quot;right person running&quot;]<br><b>bbox</b> [0.450, 0.450, 0.650, 0.850]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.305 <b>area</b> 0.080 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_064/target_02__right_person.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. carried_object</h4><p>Black object carried in the right hand of the left person.</p>
+<p class='small'><b>sam_queries</b> [&quot;black object in hand&quot;, &quot;carried gear&quot;]<br><b>bbox</b> [0.350, 0.650, 0.450, 0.850]<br><b>time</b> [0.000, 5.750]<br><b>IoU</b> 0.076 <b>area</b> 0.020 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_064/target_03__carried_object.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. smoke_plume</h4><p>Dark smoke rising from behind the hill.</p>
+<p class='small'><b>sam_queries</b> [&quot;dark smoke&quot;, &quot;smoke plume&quot;]<br><b>bbox</b> [0.200, 0.000, 0.500, 0.400]<br><b>time</b> [0.000, 5.750]<br><b>IoU</b> 0.050 <b>area</b> 0.120 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_064/target_04__smoke_plume.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. people_merging_event</h4><p>The interaction where the two people converge.</p>
+<p class='small'><b>sam_queries</b> [&quot;two people running&quot;, &quot;people overlapping&quot;]<br><b>bbox</b> [0.300, 0.500, 0.500, 0.800]<br><b>time</b> [2.500, 4.000]<br><b>IoU</b> 0.229 <b>area</b> 0.060 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_064/target_05__people_merging_event.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_068' data-reason='Unreadable text' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_068</h2>
+<div class='reason'>Unreadable text</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Dashcam view driving on a multi-lane road approaching an intersection with traffic lights, vehicles, and roadside signs.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_068/human__box1__Unreadable_text.mp4'></video>
+<p><b>bbox</b> [0.395, 0.014, 0.731, 0.407]<br><b>time</b> [7.000, 8.167]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. blue_suv</h4><p>The blue SUV driving directly ahead in the center lane.</p>
+<p class='small'><b>sam_queries</b> [&quot;blue suv&quot;, &quot;blue car ahead&quot;, &quot;vehicle in center lane&quot;]<br><b>bbox</b> [0.450, 0.450, 0.550, 0.600]<br><b>time</b> [0.000, 8.000]<br><b>IoU</b> 0.000 <b>area</b> 0.015 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_068/target_01__blue_suv.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. dark_grey_suv</h4><p>The dark grey SUV driving in the adjacent left lane.</p>
+<p class='small'><b>sam_queries</b> [&quot;dark grey suv&quot;, &quot;car in left lane&quot;]<br><b>bbox</b> [0.100, 0.450, 0.450, 0.700]<br><b>time</b> [0.000, 8.000]<br><b>IoU</b> 0.000 <b>area</b> 0.087 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_068/target_02__dark_grey_suv.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. plaza_sign</h4><p>The tall, multi-panel sign on the right side of the road.</p>
+<p class='small'><b>sam_queries</b> [&quot;tall sign on right&quot;, &quot;multi-panel sign&quot;, &quot;gas station sign&quot;]<br><b>bbox</b> [0.650, 0.100, 0.950, 0.600]<br><b>time</b> [0.000, 6.000]<br><b>IoU</b> 0.097 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_068/target_03__plaza_sign.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. overhead_signs</h4><p>The green street name signs hanging from the traffic light pole at the intersection.</p>
+<p class='small'><b>sam_queries</b> [&quot;green street signs&quot;, &quot;overhead signs&quot;, &quot;traffic light pole&quot;]<br><b>bbox</b> [0.300, 0.100, 0.800, 0.350]<br><b>time</b> [4.000, 8.000]<br><b>IoU</b> 0.485 <b>area</b> 0.125 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_068/target_04__overhead_signs.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. red_car</h4><p>The red car passing on the far left side early in the video.</p>
+<p class='small'><b>sam_queries</b> [&quot;red car&quot;, &quot;red vehicle on left&quot;]<br><b>bbox</b> [0.000, 0.400, 0.300, 0.850]<br><b>time</b> [0.000, 2.000]<br><b>IoU</b> 0.000 <b>area</b> 0.135 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_068/target_05__red_car.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_069' data-reason='Obey physical world' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_069</h2>
+<div class='reason'>Obey physical world</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A man sits by a washing machine smoking, before the camera shifts to a foreground person lighting a cigarette.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_069/human__box1__Obey_physical_world.mp4'></video>
+<p><b>bbox</b> [0.273, 0.238, 0.689, 0.696]<br><b>time</b> [3.000, 3.750]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. background_man</h4><p>Man in yellow hoodie sitting on the floor.</p>
+<p class='small'><b>sam_queries</b> [&quot;man in yellow hoodie&quot;, &quot;person sitting on floor&quot;, &quot;face of man&quot;]<br><b>bbox</b> [0.350, 0.050, 0.950, 0.950]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.270 <b>area</b> 0.540 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_069/target_01__background_man.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. washing_machine</h4><p>White washing machine next to the man.</p>
+<p class='small'><b>sam_queries</b> [&quot;washing machine&quot;, &quot;white appliance&quot;]<br><b>bbox</b> [0.000, 0.000, 0.500, 0.900]<br><b>time</b> [0.000, 1.500]<br><b>IoU</b> 0.194 <b>area</b> 0.450 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_069/target_02__washing_machine.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. foreground_hands_lighter</h4><p>Hands operating a lighter in the foreground.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands holding lighter&quot;, &quot;lighter&quot;, &quot;fingers&quot;]<br><b>bbox</b> [0.100, 0.500, 0.700, 1.000]<br><b>time</b> [1.500, 3.500]<br><b>IoU</b> 0.199 <b>area</b> 0.300 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_069/target_03__foreground_hands_lighter.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. foreground_cigarette</h4><p>Cigarette in the foreground person&#x27;s mouth.</p>
+<p class='small'><b>sam_queries</b> [&quot;cigarette&quot;, &quot;mouth holding cigarette&quot;]<br><b>bbox</b> [0.000, 0.300, 0.300, 0.800]<br><b>time</b> [1.500, 3.500]<br><b>IoU</b> 0.033 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_069/target_04__foreground_cigarette.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. lighter_flame</h4><p>Flame and smoke produced by the lighter.</p>
+<p class='small'><b>sam_queries</b> [&quot;flame&quot;, &quot;smoke&quot;, &quot;fire&quot;]<br><b>bbox</b> [0.300, 0.400, 0.600, 0.700]<br><b>time</b> [3.000, 3.500]<br><b>IoU</b> 0.462 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_069/target_05__lighter_flame.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_103' data-reason='Unnatural action' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_103</h2>
+<div class='reason'>Unnatural action</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A person jumps from a moving red car into the passenger window of a moving grey car.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_103/human__box1__Unnatural_action.mp4'></video>
+<p><b>bbox</b> [0.340, 0.039, 0.879, 0.723]<br><b>time</b> [3.000, 4.167]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. jumping_person</h4><p>The person jumping between the vehicles.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in mid-air&quot;, &quot;person wearing white shirt and blue jacket&quot;]<br><b>bbox</b> [0.300, 0.000, 0.600, 0.600]<br><b>time</b> [0.000, 3.000]<br><b>IoU</b> 0.362 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_103/target_01__jumping_person.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. person_limbs_contact</h4><p>The person&#x27;s legs and arms as they land on the grey car.</p>
+<p class='small'><b>sam_queries</b> [&quot;person&#x27;s legs&quot;, &quot;person&#x27;s arms&quot;, &quot;shoes&quot;]<br><b>bbox</b> [0.400, 0.300, 0.700, 0.700]<br><b>time</b> [1.000, 2.500]<br><b>IoU</b> 0.325 <b>area</b> 0.120 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_103/target_02__person_limbs_contact.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. grey_car_landing_zone</h4><p>The hood, windshield, and passenger window of the grey car.</p>
+<p class='small'><b>sam_queries</b> [&quot;grey car hood&quot;, &quot;grey car windshield&quot;, &quot;open car window&quot;]<br><b>bbox</b> [0.400, 0.300, 0.900, 0.900]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.435 <b>area</b> 0.300 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_103/target_03__grey_car_landing_zone.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. red_car</h4><p>The red car on the left side of the frame.</p>
+<p class='small'><b>sam_queries</b> [&quot;red car&quot;]<br><b>bbox</b> [0.000, 0.300, 0.400, 0.900]<br><b>time</b> [0.000, 2.000]<br><b>IoU</b> 0.043 <b>area</b> 0.240 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_103/target_04__red_car.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. tire_smoke</h4><p>The white smoke trailing the grey car.</p>
+<p class='small'><b>sam_queries</b> [&quot;white smoke&quot;, &quot;tire smoke&quot;]<br><b>bbox</b> [0.400, 0.200, 0.700, 0.800]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.400 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_103/target_05__tire_smoke.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_132' data-reason='Object disappearing, Unnatural action' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_132</h2>
+<div class='reason'>Object disappearing, Unnatural action</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Two men are playing chess outdoors at a stone table, with camera cuts showing different angles of the game.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_132/human__box1__Object_disappearing_Unnatural_action.mp4'></video>
+<p><b>bbox</b> [0.115, 0.439, 0.573, 1.000]<br><b>time</b> [2.700, 6.000]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. chessboard_and_pieces</h4><p>The chessboard and the arrangement of chess pieces on it.</p>
+<p class='small'><b>sam_queries</b> [&quot;chessboard&quot;, &quot;chess pieces&quot;]<br><b>bbox</b> [0.100, 0.400, 0.900, 0.950]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.506 <b>area</b> 0.440 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_132/target_01__chessboard_and_pieces.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. older_man_hand_interaction</h4><p>The older man&#x27;s right hand as he moves a chess piece.</p>
+<p class='small'><b>sam_queries</b> [&quot;older man&#x27;s right hand&quot;, &quot;hand holding chess piece&quot;]<br><b>bbox</b> [0.400, 0.400, 0.700, 0.800]<br><b>time</b> [0.000, 1.250]<br><b>IoU</b> 0.199 <b>area</b> 0.120 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_132/target_02__older_man_hand_interaction.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. younger_man_hand_interaction</h4><p>The younger man&#x27;s right hand as he moves a chess piece.</p>
+<p class='small'><b>sam_queries</b> [&quot;younger man&#x27;s right hand&quot;, &quot;hand moving chess piece&quot;]<br><b>bbox</b> [0.100, 0.500, 0.600, 0.950]<br><b>time</b> [1.250, 6.000]<br><b>IoU</b> 0.748 <b>area</b> 0.225 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_132/target_03__younger_man_hand_interaction.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. younger_man_face</h4><p>The face of the younger man wearing the white shirt.</p>
+<p class='small'><b>sam_queries</b> [&quot;younger man&#x27;s face&quot;, &quot;face of person in white shirt&quot;]<br><b>bbox</b> [0.200, 0.100, 0.600, 0.500]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.058 <b>area</b> 0.160 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_132/target_04__younger_man_face.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_143' data-reason='Identity change' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_143</h2>
+<div class='reason'>Identity change</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A person turns away from the camera and walks out of a bamboo structure onto a bamboo bridge.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_143/human__box1__Identity_change.mp4'></video>
+<p><b>bbox</b> [0.236, 0.192, 0.856, 0.947]<br><b>time</b> [7.090, 10.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. person_head</h4><p>The head and face of the main subject, initially seen in close-up.</p>
+<p class='small'><b>sam_queries</b> [&quot;person&#x27;s head&quot;, &quot;face&quot;, &quot;hair&quot;]<br><b>bbox</b> [0.150, 0.050, 0.650, 0.600]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.294 <b>area</b> 0.275 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_143/target_01__person_head.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. person_torso_clothing</h4><p>The upper body of the person, including the white top and strings.</p>
+<p class='small'><b>sam_queries</b> [&quot;person&#x27;s torso&quot;, &quot;white halter top&quot;, &quot;white strings&quot;, &quot;bare back&quot;]<br><b>bbox</b> [0.150, 0.500, 0.800, 1.000]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.466 <b>area</b> 0.325 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_143/target_02__person_torso_clothing.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. person_legs_shorts</h4><p>The lower half of the person, including patterned shorts and legs.</p>
+<p class='small'><b>sam_queries</b> [&quot;patterned shorts&quot;, &quot;person&#x27;s legs&quot;, &quot;feet&quot;]<br><b>bbox</b> [0.250, 0.500, 0.750, 1.000]<br><b>time</b> [5.000, 9.750]<br><b>IoU</b> 0.452 <b>area</b> 0.250 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_143/target_03__person_legs_shorts.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. bamboo_environment</h4><p>The bamboo walls, pillars, and the bridge structure.</p>
+<p class='small'><b>sam_queries</b> [&quot;bamboo wall&quot;, &quot;bamboo pillar&quot;, &quot;bamboo bridge&quot;]<br><b>bbox</b> [0.000, 0.000, 1.000, 1.000]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.469 <b>area</b> 1.000 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_143/target_04__bamboo_environment.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_159' data-reason='Unnatural action' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_159</h2>
+<div class='reason'>Unnatural action</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A man in a bathroom holds up two products, then rubs his face with his hands.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_159/human__box1__Unnatural_action.mp4'></video>
+<p><b>bbox</b> [0.398, 0.110, 0.856, 0.904]<br><b>time</b> [1.500, 2.700]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. held_products</h4><p>The black blister pack and white tube held by the man.</p>
+<p class='small'><b>sam_queries</b> [&quot;black blister pack&quot;, &quot;white tube&quot;, &quot;products in hands&quot;]<br><b>bbox</b> [0.250, 0.200, 0.750, 0.800]<br><b>time</b> [0.000, 1.750]<br><b>IoU</b> 0.466 <b>area</b> 0.300 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_159/target_01__held_products.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. man_hands</h4><p>The man&#x27;s hands holding the products and rubbing his face.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s hands&quot;, &quot;fingers&quot;]<br><b>bbox</b> [0.200, 0.200, 0.900, 0.900]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.601 <b>area</b> 0.490 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_159/target_02__man_hands.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. man_face</h4><p>The man&#x27;s face, especially during the rubbing action.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s face&quot;]<br><b>bbox</b> [0.450, 0.100, 0.800, 0.550]<br><b>time</b> [1.750, 3.750]<br><b>IoU</b> 0.420 <b>area</b> 0.158 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_159/target_03__man_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. shirt_logo</h4><p>The red rectangular logo with text on the man&#x27;s white t-shirt.</p>
+<p class='small'><b>sam_queries</b> [&quot;red logo on shirt&quot;, &quot;text on shirt&quot;]<br><b>bbox</b> [0.600, 0.700, 0.850, 0.950]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.136 <b>area</b> 0.062 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_159/target_04__shirt_logo.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_167' data-reason='Face distortion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_167</h2>
+<div class='reason'>Face distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A woman in a white dress interacts with a shirtless man in a courtyard, then turns towards a well while a crowd observes.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_167/human__box1__Face_distortion.mp4'></video>
+<p><b>bbox</b> [0.434, 0.419, 0.657, 0.765]<br><b>time</b> [8.700, 10.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. woman_in_white</h4><p>The woman wearing a white dress and elaborate hairpiece.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in white dress&quot;, &quot;woman with elaborate hair&quot;]<br><b>bbox</b> [0.250, 0.100, 0.600, 0.950]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.180 <b>area</b> 0.297 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_167/target_01__woman_in_white.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. shirtless_man</h4><p>The shirtless man standing on the left side of the frame.</p>
+<p class='small'><b>sam_queries</b> [&quot;shirtless man&quot;, &quot;man in plaid pants&quot;]<br><b>bbox</b> [0.050, 0.250, 0.300, 0.900]<br><b>time</b> [0.000, 5.000]<br><b>IoU</b> 0.000 <b>area</b> 0.163 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_167/target_02__shirtless_man.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. woman_hand_bottle</h4><p>The woman&#x27;s hand holding a white bottle.</p>
+<p class='small'><b>sam_queries</b> [&quot;hand holding white bottle&quot;, &quot;white bottle&quot;]<br><b>bbox</b> [0.250, 0.500, 0.400, 0.700]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.000 <b>area</b> 0.030 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_167/target_03__woman_hand_bottle.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. background_crowd</h4><p>The group of people standing in the background watching the main subjects.</p>
+<p class='small'><b>sam_queries</b> [&quot;people in background&quot;, &quot;crowd&quot;]<br><b>bbox</b> [0.500, 0.500, 0.950, 0.900]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.193 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_167/target_04__background_crowd.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. well_and_pot</h4><p>The stone well and the black pot resting on it.</p>
+<p class='small'><b>sam_queries</b> [&quot;stone well&quot;, &quot;black pot&quot;]<br><b>bbox</b> [0.700, 0.600, 0.950, 0.950]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.000 <b>area</b> 0.087 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_167/target_05__well_and_pot.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_171' data-reason='Object appearing' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_171</h2>
+<div class='reason'>Object appearing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A woman at a restaurant stirs a drink before a server presents a dish that abruptly transitions from a metal ring of green food to a plated cucumber salad, which she then eats.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_171/human__box1__Object_appearing.mp4'></video>
+<p><b>bbox</b> [0.294, 0.134, 0.829, 0.981]<br><b>time</b> [5.200, 5.900]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. woman_face</h4><p>The face of the woman sitting at the table.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman&#x27;s face&quot;, &quot;person&#x27;s head&quot;]<br><b>bbox</b> [0.450, 0.100, 0.850, 0.550]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.331 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_171/target_01__woman_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. woman_hand_utensil</h4><p>The woman&#x27;s right hand holding a spoon, then a fork.</p>
+<p class='small'><b>sam_queries</b> [&quot;hand holding utensil&quot;, &quot;woman&#x27;s right hand&quot;, &quot;fork&quot;, &quot;spoon&quot;]<br><b>bbox</b> [0.300, 0.400, 0.750, 0.900]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.497 <b>area</b> 0.225 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_171/target_02__woman_hand_utensil.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. server_hands_gloves</h4><p>The server&#x27;s hands wearing black gloves manipulating the food container.</p>
+<p class='small'><b>sam_queries</b> [&quot;black gloves&quot;, &quot;server&#x27;s hands&quot;]<br><b>bbox</b> [0.000, 0.400, 0.600, 1.000]<br><b>time</b> [1.000, 6.000]<br><b>IoU</b> 0.280 <b>area</b> 0.360 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_171/target_03__server_hands_gloves.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. food_dish_area</h4><p>The area on the table where the food is served, transitioning from a metal container to a white plate.</p>
+<p class='small'><b>sam_queries</b> [&quot;metal container&quot;, &quot;green food&quot;, &quot;white plate&quot;, &quot;cucumber salad&quot;]<br><b>bbox</b> [0.200, 0.500, 0.700, 1.000]<br><b>time</b> [1.000, 8.750]<br><b>IoU</b> 0.385 <b>area</b> 0.250 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_171/target_04__food_dish_area.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. drink_glass</h4><p>The glass containing an orange beverage on the table.</p>
+<p class='small'><b>sam_queries</b> [&quot;glass of orange drink&quot;, &quot;beverage glass&quot;]<br><b>bbox</b> [0.250, 0.550, 0.450, 0.900]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.116 <b>area</b> 0.070 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_171/target_05__drink_glass.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_180' data-reason='Face distortion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_180</h2>
+<div class='reason'>Face distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Two male dancers perform a synchronized routine, including a hand-clasping interaction, in a studio setting.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_180/human__box1__Face_distortion.mp4'></video>
+<p><b>bbox</b> [0.564, 0.159, 0.815, 0.507]<br><b>time</b> [1.068, 1.200]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. left_dancer</h4><p>The dancer on the left wearing a light-colored long-sleeve shirt and white pants.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in light blue shirt&quot;, &quot;left dancer&quot;, &quot;text on sleeve&quot;]<br><b>bbox</b> [0.100, 0.200, 0.500, 0.900]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.000 <b>area</b> 0.280 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_180/target_01__left_dancer.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. right_dancer</h4><p>The dancer on the right wearing a complex white cropped jacket and white pants with a hanging strap.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in white cropped jacket&quot;, &quot;right dancer&quot;, &quot;hanging belt strap&quot;]<br><b>bbox</b> [0.500, 0.200, 0.900, 0.900]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.265 <b>area</b> 0.280 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_180/target_02__right_dancer.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. hand_clasp_interaction</h4><p>The moment the two dancers reach out and clasp their hands together.</p>
+<p class='small'><b>sam_queries</b> [&quot;clasped hands&quot;, &quot;hands holding&quot;, &quot;arms reaching&quot;]<br><b>bbox</b> [0.400, 0.400, 0.600, 0.600]<br><b>time</b> [1.500, 2.750]<br><b>IoU</b> 0.031 <b>area</b> 0.040 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_180/target_03__hand_clasp_interaction.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. floor_mat_logo</h4><p>The white mat on the floor with a faint logo/text design.</p>
+<p class='small'><b>sam_queries</b> [&quot;white floor mat&quot;, &quot;logo on floor&quot;]<br><b>bbox</b> [0.100, 0.700, 0.900, 1.000]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.000 <b>area</b> 0.240 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_180/target_04__floor_mat_logo.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_196' data-reason='Object appearing' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_196</h2>
+<div class='reason'>Object appearing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A gloved hand reaches onto a cluttered shelf, picks up a yellow and white striped can, examines it, and places it back.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_196/human__box1__Object_appearing.mp4'></video>
+<p><b>bbox</b> [0.355, 0.152, 0.834, 0.927]<br><b>time</b> [3.417, 3.417]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. gloved_hand</h4><p>The hand wearing a black glove that enters the frame and manipulates the can.</p>
+<p class='small'><b>sam_queries</b> [&quot;black glove&quot;, &quot;hand wearing black glove&quot;]<br><b>bbox</b> [0.000, 0.500, 0.800, 1.000]<br><b>time</b> [0.250, 3.250]<br><b>IoU</b> 0.327 <b>area</b> 0.400 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_196/target_01__gloved_hand.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. manipulated_can</h4><p>The yellow and white striped can with holes and a clear window that is picked up.</p>
+<p class='small'><b>sam_queries</b> [&quot;yellow and white striped can&quot;, &quot;can with holes&quot;, &quot;can with clear window&quot;]<br><b>bbox</b> [0.200, 0.100, 0.800, 0.900]<br><b>time</b> [0.000, 3.250]<br><b>IoU</b> 0.642 <b>area</b> 0.480 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_196/target_02__manipulated_can.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. hand_can_contact</h4><p>The point of contact between the black glove and the yellow/white can.</p>
+<p class='small'><b>sam_queries</b> [&quot;fingers on can&quot;, &quot;glove holding can&quot;]<br><b>bbox</b> [0.300, 0.400, 0.700, 0.900]<br><b>time</b> [1.000, 3.000]<br><b>IoU</b> 0.433 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_196/target_03__hand_can_contact.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. background_objects</h4><p>The wooden shelf and the various boxes and cans resting on it.</p>
+<p class='small'><b>sam_queries</b> [&quot;wooden shelf&quot;, &quot;cardboard boxes&quot;, &quot;cans on shelf&quot;]<br><b>bbox</b> [0.000, 0.000, 1.000, 0.800]<br><b>time</b> [0.000, 3.250]<br><b>IoU</b> 0.361 <b>area</b> 0.800 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_196/target_04__background_objects.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_197' data-reason='Mirror problem' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_197</h2>
+<div class='reason'>Mirror problem</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A yoga instructor walks through a class and physically adjusts the pose of a student in the foreground, while other students perform side stretches and a large mirror reflects the scene.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_197/human__box1__Mirror_problem.mp4'></video>
+<p><b>bbox</b> [0.520, 0.092, 0.997, 0.749]<br><b>time</b> [7.542, 7.542]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. instructor_interaction</h4><p>The male instructor walking forward and using his hands to adjust the posture of the woman in the foreground.</p>
+<p class='small'><b>sam_queries</b> [&quot;man in grey shirt&quot;, &quot;instructor&quot;, &quot;man&#x27;s hands&quot;, &quot;man adjusting woman&quot;]<br><b>bbox</b> [0.500, 0.100, 0.900, 0.900]<br><b>time</b> [0.000, 7.250]<br><b>IoU</b> 0.637 <b>area</b> 0.320 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_197/target_01__instructor_interaction.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. foreground_student</h4><p>The woman in the foreground wearing a black tank top and red leggings, transitioning into a side stretch.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in black tank top&quot;, &quot;woman in red leggings&quot;, &quot;woman stretching&quot;]<br><b>bbox</b> [0.500, 0.500, 0.900, 1.000]<br><b>time</b> [3.000, 7.250]<br><b>IoU</b> 0.226 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_197/target_02__foreground_student.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. mirror_reflection</h4><p>The large mirror on the right wall reflecting the instructor and the students.</p>
+<p class='small'><b>sam_queries</b> [&quot;mirror&quot;, &quot;reflection in mirror&quot;, &quot;people in mirror&quot;]<br><b>bbox</b> [0.700, 0.100, 1.000, 0.700]<br><b>time</b> [0.000, 7.250]<br><b>IoU</b> 0.566 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_197/target_03__mirror_reflection.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. background_students</h4><p>The group of women sitting on mats in the background, performing side stretches.</p>
+<p class='small'><b>sam_queries</b> [&quot;women on yoga mats&quot;, &quot;people stretching in background&quot;]<br><b>bbox</b> [0.000, 0.300, 0.700, 0.800]<br><b>time</b> [0.000, 7.250]<br><b>IoU</b> 0.139 <b>area</b> 0.350 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_197/target_04__background_students.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_210' data-reason='Object disappearing' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_210</h2>
+<div class='reason'>Object disappearing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A soccer player in a white jersey stands near the goal while another in purple lies on the pitch; a ball is seen entering the goal net.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_210/human__box1__Object_disappearing.mp4'></video>
+<p><b>bbox</b> [0.464, 0.450, 0.759, 0.859]<br><b>time</b> [0.910, 2.270]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. standing_player_white</h4><p>The soccer player standing in the white jersey with number 15.</p>
+<p class='small'><b>sam_queries</b> [&quot;soccer player in white jersey&quot;, &quot;player number 15&quot;]<br><b>bbox</b> [0.050, 0.350, 0.300, 0.850]<br><b>time</b> [0.000, 3.750]<br><b>IoU</b> 0.000 <b>area</b> 0.125 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_210/target_01__standing_player_white.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. grounded_player_purple</h4><p>The soccer player lying on the ground in the purple jersey.</p>
+<p class='small'><b>sam_queries</b> [&quot;soccer player in purple jersey&quot;, &quot;player on the ground&quot;]<br><b>bbox</b> [0.020, 0.650, 0.350, 0.950]<br><b>time</b> [0.000, 3.750]<br><b>IoU</b> 0.000 <b>area</b> 0.099 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_210/target_02__grounded_player_purple.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. soccer_ball</h4><p>The soccer ball moving into the goal net.</p>
+<p class='small'><b>sam_queries</b> [&quot;soccer ball&quot;, &quot;ball in net&quot;]<br><b>bbox</b> [0.650, 0.550, 0.750, 0.750]<br><b>time</b> [0.000, 1.500]<br><b>IoU</b> 0.165 <b>area</b> 0.020 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_210/target_03__soccer_ball.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. goal_net</h4><p>The white mesh structure of the soccer goal.</p>
+<p class='small'><b>sam_queries</b> [&quot;goal net&quot;, &quot;white mesh&quot;]<br><b>bbox</b> [0.400, 0.200, 0.950, 0.850]<br><b>time</b> [0.000, 3.750]<br><b>IoU</b> 0.328 <b>area</b> 0.357 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_210/target_04__goal_net.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. broadcast_text</h4><p>The broadcast graphics and text overlay in the bottom right corner.</p>
+<p class='small'><b>sam_queries</b> [&quot;text overlay&quot;, &quot;broadcast graphics&quot;]<br><b>bbox</b> [0.800, 0.850, 0.950, 0.950]<br><b>time</b> [0.000, 3.750]<br><b>IoU</b> 0.000 <b>area</b> 0.015 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_210/target_05__broadcast_text.mp4'></video>
+</div>
+</section></div>
+</article><article class='case strict-miss' data-video='fake_240' data-reason='Unnatural structure' data-strict-miss='true'>
+<div class='case-head'>
+<h2>fake_240</h2>
+<div class='reason'>Unnatural structure</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge miss'>strict ST: miss</span>
+</div></div>
+<p class='scene'>A man in a yellow hoodie holds and examines a pair of sunglasses across three different camera angles.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/fake_240/human__box1__Unnatural_structure.mp4'></video>
+<p><b>bbox</b> [0.277, 0.001, 0.704, 0.575]<br><b>time</b> [3.130, 4.200]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. man_face</h4><p>The face of the man, visible in the first and third shots.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s face&quot;, &quot;face of person in yellow hoodie&quot;]<br><b>bbox</b> [0.350, 0.150, 0.650, 0.550]<br><b>time</b> [0.000, 2.000]<br><b>IoU</b> 0.490 <b>area</b> 0.120 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_240/target_01__man_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. sunglasses</h4><p>The black-framed sunglasses with blue lenses.</p>
+<p class='small'><b>sam_queries</b> [&quot;sunglasses&quot;, &quot;black glasses with blue lenses&quot;]<br><b>bbox</b> [0.250, 0.450, 0.750, 0.850]<br><b>time</b> [0.000, 7.000]<br><b>IoU</b> 0.136 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_240/target_02__sunglasses.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. hands_sunglasses_interaction</h4><p>The man&#x27;s hands holding, opening, and touching the lenses of the sunglasses.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands holding sunglasses&quot;, &quot;fingers touching lens&quot;]<br><b>bbox</b> [0.150, 0.400, 0.850, 0.900]<br><b>time</b> [2.000, 4.500]<br><b>IoU</b> 0.144 <b>area</b> 0.350 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_240/target_03__hands_sunglasses_interaction.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. yellow_hoodie</h4><p>The yellow hoodie worn by the man.</p>
+<p class='small'><b>sam_queries</b> [&quot;yellow hoodie&quot;, &quot;yellow sweatshirt&quot;]<br><b>bbox</b> [0.100, 0.400, 0.900, 1.000]<br><b>time</b> [0.000, 7.000]<br><b>IoU</b> 0.115 <b>area</b> 0.480 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/fake_240/target_04__yellow_hoodie.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000015_youtube_7cb1ca3d' data-reason='Object splitting' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000015_youtube_7cb1ca3d</h2>
+<div class='reason'>Object splitting</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Two men in tropical attire are laughing and interacting at a party, with one holding a wooden drink cup.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/FAIL_000015_youtube_7cb1ca3d/human__box1__Object_splitting.mp4'></video>
+<p><b>bbox</b> [0.327, 0.442, 0.642, 0.947]<br><b>time</b> [2.600, 2.639]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. left_man_hands_cup</h4><p>The hands of the man on the left and the objects he is holding throughout the video.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s hands&quot;, &quot;wooden cup&quot;, &quot;small object in hand&quot;]<br><b>bbox</b> [0.350, 0.550, 0.550, 0.850]<br><b>time</b> [0.000, 4.500]<br><b>IoU</b> 0.376 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000015_youtube_7cb1ca3d/target_01__left_man_hands_cup.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. right_man_hands_cup</h4><p>The hands of the man on the right and the tall wooden cup he is holding.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s hands&quot;, &quot;tall wooden cup with straw&quot;]<br><b>bbox</b> [0.500, 0.550, 0.750, 0.950]<br><b>time</b> [0.000, 4.500]<br><b>IoU</b> 0.278 <b>area</b> 0.100 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000015_youtube_7cb1ca3d/target_02__right_man_hands_cup.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. left_man_torso</h4><p>The torso, shirt, and lei of the man on the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;white shirt&quot;, &quot;man&#x27;s chest&quot;, &quot;green lei&quot;]<br><b>bbox</b> [0.150, 0.400, 0.450, 0.900]<br><b>time</b> [0.000, 4.500]<br><b>IoU</b> 0.224 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000015_youtube_7cb1ca3d/target_03__left_man_torso.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. men_faces</h4><p>The faces and hats of both main subjects.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s face&quot;, &quot;straw hat&quot;, &quot;green leaf hat&quot;]<br><b>bbox</b> [0.200, 0.100, 0.700, 0.450]<br><b>time</b> [0.000, 4.500]<br><b>IoU</b> 0.008 <b>area</b> 0.175 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000015_youtube_7cb1ca3d/target_04__men_faces.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. background_person_left</h4><p>The person visible in the background on the far left.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in background&quot;, &quot;floral shirt&quot;]<br><b>bbox</b> [0.000, 0.200, 0.150, 0.900]<br><b>time</b> [0.000, 4.500]<br><b>IoU</b> 0.000 <b>area</b> 0.105 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000015_youtube_7cb1ca3d/target_05__background_person_left.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000034_manual_20ccfe8a' data-reason='Object morphing' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000034_manual_20ccfe8a</h2>
+<div class='reason'>Object morphing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Skier performs aerial flip off snow jump, lands, and skis away.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/FAIL_000034_manual_20ccfe8a/human__box1__Object_morphing.mp4'></video>
+<p><b>bbox</b> [0.588, 0.040, 0.869, 0.644]<br><b>time</b> [3.590, 5.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. skier_body</h4><p>Skier performing jump and landing.</p>
+<p class='small'><b>sam_queries</b> [&quot;skier&quot;, &quot;person in ski gear&quot;]<br><b>bbox</b> [0.500, 0.000, 0.900, 0.900]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.472 <b>area</b> 0.360 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000034_manual_20ccfe8a/target_01__skier_body.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. skis</h4><p>Skis attached to skier.</p>
+<p class='small'><b>sam_queries</b> [&quot;skis&quot;, &quot;ski boards&quot;]<br><b>bbox</b> [0.500, 0.000, 0.900, 0.900]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.472 <b>area</b> 0.360 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000034_manual_20ccfe8a/target_02__skis.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. snow_jump_peak</h4><p>Peak of snow ramp on right.</p>
+<p class='small'><b>sam_queries</b> [&quot;snow ramp&quot;, &quot;snow peak&quot;]<br><b>bbox</b> [0.600, 0.300, 1.000, 1.000]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.259 <b>area</b> 0.280 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000034_manual_20ccfe8a/target_03__snow_jump_peak.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. landing_snow_spray</h4><p>Snow particles kicked up upon landing.</p>
+<p class='small'><b>sam_queries</b> [&quot;snow spray&quot;, &quot;flying snow&quot;]<br><b>bbox</b> [0.500, 0.500, 1.000, 1.000]<br><b>time</b> [3.750, 4.750]<br><b>IoU</b> 0.107 <b>area</b> 0.250 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000034_manual_20ccfe8a/target_04__landing_snow_spray.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. background_mountains</h4><p>Snowy mountain range in background.</p>
+<p class='small'><b>sam_queries</b> [&quot;mountains&quot;, &quot;snowy peaks&quot;]<br><b>bbox</b> [0.000, 0.300, 0.800, 0.700]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.176 <b>area</b> 0.320 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000034_manual_20ccfe8a/target_05__background_mountains.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000322_manual_3868dab3' data-reason='Local flickering' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000322_manual_3868dab3</h2>
+<div class='reason'>Local flickering</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A slow camera pan across a piece of blue, textured fabric resting on a grid-lined cutting mat.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/FAIL_000322_manual_3868dab3/human__box1__Local_flickering.mp4'></video>
+<p><b>bbox</b> [0.011, 0.014, 0.978, 0.919]<br><b>time</b> [0.000, 0.000]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. blue_fabric</h4><p>The rectangular piece of blue, patterned fabric.</p>
+<p class='small'><b>sam_queries</b> [&quot;blue fabric&quot;, &quot;patterned material&quot;, &quot;rectangular cloth&quot;]<br><b>bbox</b> [0.000, 0.100, 1.000, 0.900]<br><b>time</b> [0.000, 3.250]<br><b>IoU</b> 0.858 <b>area</b> 0.800 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000322_manual_3868dab3/target_01__blue_fabric.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. cutting_mat_grid</h4><p>The white cutting mat with grid lines and numbers, visible mainly at the top and bottom edges.</p>
+<p class='small'><b>sam_queries</b> [&quot;cutting mat&quot;, &quot;grid surface&quot;, &quot;white mat with lines&quot;, &quot;numbers on mat&quot;]<br><b>bbox</b> [0.000, 0.000, 1.000, 0.250]<br><b>time</b> [0.000, 3.250]<br><b>IoU</b> 0.254 <b>area</b> 0.250 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000322_manual_3868dab3/target_02__cutting_mat_grid.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. fabric_texture_details</h4><p>The prominent diagonal and vertical folds/pleats initially on the left side of the fabric.</p>
+<p class='small'><b>sam_queries</b> [&quot;fabric folds&quot;, &quot;pleats&quot;, &quot;wrinkles on cloth&quot;]<br><b>bbox</b> [0.000, 0.100, 0.600, 0.800]<br><b>time</b> [0.000, 2.000]<br><b>IoU</b> 0.467 <b>area</b> 0.420 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/FAIL_000322_manual_3868dab3/target_03__fabric_texture_details.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='real_003' data-reason='Unreadable text' data-strict-miss='false'>
+<div class='case-head'>
+<h2>real_003</h2>
+<div class='reason'>Unreadable text</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A graffiti-covered robot stands on a futuristic city street holding a cardboard sign asking for credits, while pedestrians walk past in the foreground. The video ends with a cut to the robot&#x27;s back.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/real_003/human__box1__Unreadable_text.mp4'></video>
+<p><b>bbox</b> [0.351, 0.353, 0.674, 0.851]<br><b>time</b> [1.000, 6.000]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. main_robot_front</h4><p>The graffiti-covered robot standing in the center of the frame, facing forward.</p>
+<p class='small'><b>sam_queries</b> [&quot;robot&quot;, &quot;graffiti robot&quot;, &quot;metal robot body&quot;]<br><b>bbox</b> [0.300, 0.100, 0.700, 0.900]<br><b>time</b> [0.000, 7.000]<br><b>IoU</b> 0.503 <b>area</b> 0.320 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_003/target_01__main_robot_front.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. cardboard_sign</h4><p>The cardboard sign held by the robot, containing handwritten text.</p>
+<p class='small'><b>sam_queries</b> [&quot;cardboard sign&quot;, &quot;sign with text&quot;, &quot;brown rectangular sign&quot;]<br><b>bbox</b> [0.350, 0.400, 0.650, 0.700]<br><b>time</b> [0.000, 7.000]<br><b>IoU</b> 0.558 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_003/target_02__cardboard_sign.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. foreground_pedestrians</h4><p>The various people walking across the screen in the foreground, passing between the camera and the robot.</p>
+<p class='small'><b>sam_queries</b> [&quot;person walking&quot;, &quot;pedestrian&quot;, &quot;people in foreground&quot;]<br><b>bbox</b> [0.000, 0.200, 1.000, 1.000]<br><b>time</b> [0.000, 7.000]<br><b>IoU</b> 0.201 <b>area</b> 0.800 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_003/target_03__foreground_pedestrians.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. background_cityscape</h4><p>The futuristic buildings, sky, and flying vehicles in the background.</p>
+<p class='small'><b>sam_queries</b> [&quot;buildings&quot;, &quot;skyscraper&quot;, &quot;flying vehicle&quot;, &quot;sky&quot;]<br><b>bbox</b> [0.000, 0.000, 1.000, 0.500]<br><b>time</b> [0.000, 7.000]<br><b>IoU</b> 0.077 <b>area</b> 0.500 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_003/target_04__background_cityscape.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. main_robot_back</h4><p>The back view of the robot shown after the camera cut.</p>
+<p class='small'><b>sam_queries</b> [&quot;robot back&quot;, &quot;metal robot&quot;]<br><b>bbox</b> [0.200, 0.100, 0.800, 1.000]<br><b>time</b> [7.000, 8.000]<br><b>IoU</b> 0.298 <b>area</b> 0.540 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_003/target_05__main_robot_back.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='real_122' data-reason='Hand distortion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>real_122</h2>
+<div class='reason'>Hand distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Three colleagues discuss a presentation displayed on a large screen in an office.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/real_122/human__box1__Hand_distortion.mp4'></video>
+<p><b>bbox</b> [0.138, 0.582, 0.404, 0.943]<br><b>time</b> [2.850, 4.870]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. center_man_pointing_hand</h4><p>Right hand of the man pointing at the screen.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s right hand&quot;, &quot;hand pointing at screen&quot;]<br><b>bbox</b> [0.450, 0.350, 0.600, 0.550]<br><b>time</b> [0.000, 3.000]<br><b>IoU</b> 0.000 <b>area</b> 0.030 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_01__center_man_pointing_hand.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. presentation_screen_content</h4><p>Large monitor displaying posters and text.</p>
+<p class='small'><b>sam_queries</b> [&quot;large screen&quot;, &quot;monitor&quot;, &quot;presentation display&quot;]<br><b>bbox</b> [0.250, 0.150, 0.750, 0.600]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.009 <b>area</b> 0.225 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_02__presentation_screen_content.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. left_woman_face_hair</h4><p>Face and short pink hair of the woman on the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman with pink hair&quot;, &quot;woman&#x27;s face&quot;, &quot;short red hair&quot;]<br><b>bbox</b> [0.150, 0.200, 0.350, 0.500]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.000 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_03__left_woman_face_hair.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. right_woman_hands_notebook</h4><p>Hands of the woman on the right holding a notebook and pen.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands holding notebook&quot;, &quot;notebook&quot;, &quot;pen&quot;]<br><b>bbox</b> [0.700, 0.450, 0.900, 0.700]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.000 <b>area</b> 0.050 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_04__right_woman_hands_notebook.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. table_devices</h4><p>Laptops and tablets resting on the meeting table.</p>
+<p class='small'><b>sam_queries</b> [&quot;laptops on table&quot;, &quot;tablets&quot;, &quot;electronic devices&quot;]<br><b>bbox</b> [0.200, 0.650, 0.800, 0.950]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.276 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_05__table_devices.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='real_122' data-reason='Hand distortion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>real_122</h2>
+<div class='reason'>Hand distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Three colleagues discuss a presentation displayed on a large screen in an office.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/train/real_122/human__box2__Hand_distortion.mp4'></video>
+<p><b>bbox</b> [0.672, 0.438, 0.862, 0.749]<br><b>time</b> [5.760, 7.100]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. center_man_pointing_hand</h4><p>Right hand of the man pointing at the screen.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s right hand&quot;, &quot;hand pointing at screen&quot;]<br><b>bbox</b> [0.450, 0.350, 0.600, 0.550]<br><b>time</b> [0.000, 3.000]<br><b>IoU</b> 0.000 <b>area</b> 0.030 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_01__center_man_pointing_hand.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. presentation_screen_content</h4><p>Large monitor displaying posters and text.</p>
+<p class='small'><b>sam_queries</b> [&quot;large screen&quot;, &quot;monitor&quot;, &quot;presentation display&quot;]<br><b>bbox</b> [0.250, 0.150, 0.750, 0.600]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.047 <b>area</b> 0.225 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_02__presentation_screen_content.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. left_woman_face_hair</h4><p>Face and short pink hair of the woman on the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman with pink hair&quot;, &quot;woman&#x27;s face&quot;, &quot;short red hair&quot;]<br><b>bbox</b> [0.150, 0.200, 0.350, 0.500]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.000 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_03__left_woman_face_hair.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. right_woman_hands_notebook</h4><p>Hands of the woman on the right holding a notebook and pen.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands holding notebook&quot;, &quot;notebook&quot;, &quot;pen&quot;]<br><b>bbox</b> [0.700, 0.450, 0.900, 0.700]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.589 <b>area</b> 0.050 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_04__right_woman_hands_notebook.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. table_devices</h4><p>Laptops and tablets resting on the meeting table.</p>
+<p class='small'><b>sam_queries</b> [&quot;laptops on table&quot;, &quot;tablets&quot;, &quot;electronic devices&quot;]<br><b>bbox</b> [0.200, 0.650, 0.800, 0.950]<br><b>time</b> [0.000, 7.750]<br><b>IoU</b> 0.056 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/train/real_122/target_05__table_devices.mp4'></video>
+</div>
+</section></div>
+</article></section><section class='set'><h1>heldout</h1><article class='case' data-video='fake_002' data-reason='Local flickering' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_002</h2>
+<div class='reason'>Local flickering</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A young girl in a yellow shirt draws with a blue pencil at a desk in a classroom, while a teacher&#x27;s hand briefly appears and the camera slowly zooms in on the girl&#x27;s hands.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_002/human__box1__Local_flickering.mp4'></video>
+<p><b>bbox</b> [0.395, 0.665, 0.693, 0.924]<br><b>time</b> [5.500, 10.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. main_girl_face</h4><p>The face of the young girl in the yellow shirt in the center of the frame.</p>
+<p class='small'><b>sam_queries</b> [&quot;girl&#x27;s face&quot;, &quot;face of girl in yellow shirt&quot;]<br><b>bbox</b> [0.350, 0.100, 0.650, 0.500]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.000 <b>area</b> 0.120 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_002/target_01__main_girl_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. girl_hands_pencil</h4><p>The hands of the main girl holding the blue pencil and resting on the paper.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands holding pencil&quot;, &quot;blue pencil&quot;, &quot;girl&#x27;s hands&quot;]<br><b>bbox</b> [0.300, 0.500, 0.700, 0.950]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.427 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_002/target_02__girl_hands_pencil.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. teacher_hand</h4><p>The adult hand that briefly appears on the left side of the frame, near the girl&#x27;s paper.</p>
+<p class='small'><b>sam_queries</b> [&quot;adult hand&quot;, &quot;hand on left&quot;]<br><b>bbox</b> [0.100, 0.600, 0.400, 0.900]<br><b>time</b> [0.500, 2.500]<br><b>IoU</b> 0.007 <b>area</b> 0.090 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_002/target_03__teacher_hand.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. boy_right</h4><p>The boy in the white shirt sitting to the right of the main girl.</p>
+<p class='small'><b>sam_queries</b> [&quot;boy in white shirt&quot;, &quot;boy&#x27;s face&quot;]<br><b>bbox</b> [0.750, 0.000, 1.000, 0.600]<br><b>time</b> [0.000, 5.500]<br><b>IoU</b> 0.000 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_002/target_04__boy_right.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. desk_objects</h4><p>The purple cup filled with pencils and the colorful blocks on the right side of the desk.</p>
+<p class='small'><b>sam_queries</b> [&quot;purple cup with pencils&quot;, &quot;colorful blocks&quot;]<br><b>bbox</b> [0.650, 0.500, 1.000, 0.950]<br><b>time</b> [0.000, 10.000]<br><b>IoU</b> 0.050 <b>area</b> 0.157 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_002/target_05__desk_objects.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_003' data-reason='Unreadable text' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_003</h2>
+<div class='reason'>Unreadable text</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A woman on a stage is joined by a giant teddy bear mascot as the camera zooms out to reveal an audience and on-screen text.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_003/human__box1__Unreadable_text.mp4'></video>
+<p><b>bbox</b> [0.318, 0.019, 0.795, 0.369]<br><b>time</b> [3.470, 4.600]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. woman_on_stage</h4><p>Woman standing on the left side of the stage wearing a patterned coat.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in patterned coat&quot;, &quot;woman&#x27;s face&quot;, &quot;woman&#x27;s shoes&quot;]<br><b>bbox</b> [0.200, 0.100, 0.500, 0.900]<br><b>time</b> [0.000, 5.250]<br><b>IoU</b> 0.137 <b>area</b> 0.240 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_003/target_01__woman_on_stage.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. giant_teddy_bear</h4><p>Large teddy bear mascot with a red hat entering from the right.</p>
+<p class='small'><b>sam_queries</b> [&quot;giant teddy bear&quot;, &quot;bear&#x27;s red hat&quot;, &quot;bear&#x27;s face&quot;, &quot;bear&#x27;s arms&quot;]<br><b>bbox</b> [0.500, 0.100, 1.000, 0.900]<br><b>time</b> [1.750, 5.250]<br><b>IoU</b> 0.163 <b>area</b> 0.400 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_003/target_02__giant_teddy_bear.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. stage_text</h4><p>Text appearing above the stage reading &#x27;RROTHS&#x27;, &#x27;YYIBNRIAASSPS&#x27;, and &#x27;240&#x27;.</p>
+<p class='small'><b>sam_queries</b> [&quot;text on screen&quot;, &quot;white text&quot;, &quot;numbers on screen&quot;]<br><b>bbox</b> [0.300, 0.000, 0.700, 0.200]<br><b>time</b> [2.250, 5.250]<br><b>IoU</b> 0.387 <b>area</b> 0.080 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_003/target_03__stage_text.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. audience_members</h4><p>People seated in the foreground watching the stage.</p>
+<p class='small'><b>sam_queries</b> [&quot;people in audience&quot;, &quot;backs of heads&quot;, &quot;seated people&quot;]<br><b>bbox</b> [0.000, 0.700, 1.000, 1.000]<br><b>time</b> [2.000, 5.250]<br><b>IoU</b> 0.000 <b>area</b> 0.300 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_003/target_04__audience_members.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. top_left_logo</h4><p>Logo in the top left corner.</p>
+<p class='small'><b>sam_queries</b> [&quot;logo in top left&quot;, &quot;pmg logo&quot;]<br><b>bbox</b> [0.000, 0.000, 0.150, 0.150]<br><b>time</b> [0.000, 5.250]<br><b>IoU</b> 0.000 <b>area</b> 0.022 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_003/target_05__top_left_logo.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_011' data-reason='Object appearing' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_011</h2>
+<div class='reason'>Object appearing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A person scoops rice from a tray with a green spoon while another person&#x27;s arm enters to interact with a plate.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_011/human__box1__Object_appearing.mp4'></video>
+<p><b>bbox</b> [0.116, 0.479, 0.504, 0.933]<br><b>time</b> [4.000, 5.958]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. woman_right_hand_spoon</h4><p>The woman&#x27;s right hand holding and moving the green plastic spoon to scoop rice.</p>
+<p class='small'><b>sam_queries</b> [&quot;right hand&quot;, &quot;green spoon&quot;, &quot;hand holding spoon&quot;]<br><b>bbox</b> [0.350, 0.300, 0.600, 0.900]<br><b>time</b> [0.000, 5.750]<br><b>IoU</b> 0.248 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_011/target_01__woman_right_hand_spoon.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. rice_pile</h4><p>The pile of rice in the metal tray being scooped.</p>
+<p class='small'><b>sam_queries</b> [&quot;pile of rice&quot;, &quot;food in tray&quot;]<br><b>bbox</b> [0.200, 0.600, 0.700, 0.950]<br><b>time</b> [0.000, 5.750]<br><b>IoU</b> 0.406 <b>area</b> 0.175 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_011/target_02__rice_pile.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. second_person_arm</h4><p>The arm and hand of a second person entering from the left, holding a metal spoon.</p>
+<p class='small'><b>sam_queries</b> [&quot;arm on left&quot;, &quot;hand holding metal spoon&quot;, &quot;metal spoon&quot;]<br><b>bbox</b> [0.000, 0.600, 0.350, 0.950]<br><b>time</b> [2.750, 5.750]<br><b>IoU</b> 0.353 <b>area</b> 0.122 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_011/target_03__second_person_arm.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. static_bottles</h4><p>The Coca-Cola and water bottles sitting on the ledge.</p>
+<p class='small'><b>sam_queries</b> [&quot;coca cola bottle&quot;, &quot;water bottle&quot;, &quot;bottles&quot;]<br><b>bbox</b> [0.150, 0.250, 0.350, 0.650]<br><b>time</b> [0.000, 5.750]<br><b>IoU</b> 0.154 <b>area</b> 0.080 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_011/target_04__static_bottles.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. woman_left_hand</h4><p>The woman&#x27;s left hand resting on her leg, featuring rings and tattoos.</p>
+<p class='small'><b>sam_queries</b> [&quot;left hand&quot;, &quot;hand with rings&quot;, &quot;hand on leg&quot;]<br><b>bbox</b> [0.600, 0.500, 0.800, 0.700]<br><b>time</b> [0.000, 5.750]<br><b>IoU</b> 0.000 <b>area</b> 0.040 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_011/target_05__woman_left_hand.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_066' data-reason='Identity change' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_066</h2>
+<div class='reason'>Identity change</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A group of seven female dancers perform a synchronized routine in a studio with a glossy floor and a glowing text sign, featuring a camera zoom in on the lead dancer and a subsequent zoom out.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/human__box1__Identity_change.mp4'></video>
+<p><b>bbox</b> [0.011, 0.062, 0.457, 0.993]<br><b>time</b> [9.042, 9.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. center_dancer</h4><p>The lead dancer in the center wearing a white crop top and white pleated skirt.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in white crop top&quot;, &quot;center dancer&quot;, &quot;blonde woman in white skirt&quot;]<br><b>bbox</b> [0.350, 0.200, 0.650, 0.950]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.143 <b>area</b> 0.225 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_01__center_dancer.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. floor_sign</h4><p>The glowing 3D text sign resting on the floor in the foreground.</p>
+<p class='small'><b>sam_queries</b> [&quot;glowing text sign&quot;, &quot;white letters on floor&quot;, &quot;illuminated sign&quot;]<br><b>bbox</b> [0.300, 0.800, 0.700, 0.980]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.062 <b>area</b> 0.072 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_02__floor_sign.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. dancer_yellow_top</h4><p>The dancer positioned to the left of the center, wearing a yellow and black striped long-sleeve top.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in yellow striped shirt&quot;, &quot;dancer in yellow and black top&quot;]<br><b>bbox</b> [0.200, 0.300, 0.450, 0.850]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.332 <b>area</b> 0.138 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_03__dancer_yellow_top.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. dancer_green_top</h4><p>The dancer positioned to the right of the center, wearing a green and blue striped long-sleeve top.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in green striped shirt&quot;, &quot;dancer in green and blue top&quot;]<br><b>bbox</b> [0.550, 0.300, 0.800, 0.850]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.000 <b>area</b> 0.138 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_04__dancer_green_top.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. floor_reflections</h4><p>The glossy floor surface reflecting the dancers and the glowing sign.</p>
+<p class='small'><b>sam_queries</b> [&quot;floor reflection&quot;, &quot;shiny floor surface&quot;]<br><b>bbox</b> [0.000, 0.800, 1.000, 1.000]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.162 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_05__floor_reflections.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_066' data-reason='Identity change' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_066</h2>
+<div class='reason'>Identity change</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A group of seven female dancers perform a synchronized routine in a studio with a glossy floor and a glowing text sign, featuring a camera zoom in on the lead dancer and a subsequent zoom out.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/human__box2__Identity_change.mp4'></video>
+<p><b>bbox</b> [0.528, 0.050, 1.000, 1.000]<br><b>time</b> [9.042, 9.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. center_dancer</h4><p>The lead dancer in the center wearing a white crop top and white pleated skirt.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in white crop top&quot;, &quot;center dancer&quot;, &quot;blonde woman in white skirt&quot;]<br><b>bbox</b> [0.350, 0.200, 0.650, 0.950]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.157 <b>area</b> 0.225 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_01__center_dancer.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. floor_sign</h4><p>The glowing 3D text sign resting on the floor in the foreground.</p>
+<p class='small'><b>sam_queries</b> [&quot;glowing text sign&quot;, &quot;white letters on floor&quot;, &quot;illuminated sign&quot;]<br><b>bbox</b> [0.300, 0.800, 0.700, 0.980]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.063 <b>area</b> 0.072 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_02__floor_sign.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. dancer_yellow_top</h4><p>The dancer positioned to the left of the center, wearing a yellow and black striped long-sleeve top.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in yellow striped shirt&quot;, &quot;dancer in yellow and black top&quot;]<br><b>bbox</b> [0.200, 0.300, 0.450, 0.850]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.000 <b>area</b> 0.138 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_03__dancer_yellow_top.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. dancer_green_top</h4><p>The dancer positioned to the right of the center, wearing a green and blue striped long-sleeve top.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman in green striped shirt&quot;, &quot;dancer in green and blue top&quot;]<br><b>bbox</b> [0.550, 0.300, 0.800, 0.850]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.307 <b>area</b> 0.138 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_04__dancer_green_top.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. floor_reflections</h4><p>The glossy floor surface reflecting the dancers and the glowing sign.</p>
+<p class='small'><b>sam_queries</b> [&quot;floor reflection&quot;, &quot;shiny floor surface&quot;]<br><b>bbox</b> [0.000, 0.800, 1.000, 1.000]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.170 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_066/target_05__floor_reflections.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_080' data-reason='Unnatural action' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_080</h2>
+<div class='reason'>Unnatural action</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A woman in a kitchen whisks a green liquid in a glass bowl, then pours more green liquid from a red mug into the bowl.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_080/human__box1__Unnatural_action.mp4'></video>
+<p><b>bbox</b> [0.518, 0.423, 0.806, 0.927]<br><b>time</b> [6.800, 9.788]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. woman_hands</h4><p>The woman&#x27;s hands as they grip and manipulate the whisk, bowl, and mug.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman&#x27;s hands&quot;, &quot;hand holding whisk&quot;, &quot;hand holding mug&quot;, &quot;hand holding bowl&quot;]<br><b>bbox</b> [0.200, 0.500, 0.700, 0.950]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.266 <b>area</b> 0.225 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_080/target_01__woman_hands.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. whisk_and_bowl</h4><p>The pink whisk stirring the green liquid inside the clear glass bowl.</p>
+<p class='small'><b>sam_queries</b> [&quot;pink whisk&quot;, &quot;glass bowl&quot;, &quot;green liquid in bowl&quot;]<br><b>bbox</b> [0.350, 0.600, 0.650, 0.950]<br><b>time</b> [0.000, 6.000]<br><b>IoU</b> 0.209 <b>area</b> 0.105 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_080/target_02__whisk_and_bowl.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. pouring_liquid</h4><p>The stream of green liquid being poured from the red mug into the glass bowl.</p>
+<p class='small'><b>sam_queries</b> [&quot;red mug&quot;, &quot;stream of green liquid&quot;, &quot;liquid pouring&quot;]<br><b>bbox</b> [0.400, 0.400, 0.800, 0.950]<br><b>time</b> [7.500, 9.500]<br><b>IoU</b> 0.638 <b>area</b> 0.220 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_080/target_03__pouring_liquid.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. background_objects</h4><p>The static objects on the kitchen counter, including the white kettle, flower vase, and containers.</p>
+<p class='small'><b>sam_queries</b> [&quot;white kettle&quot;, &quot;flower vase&quot;, &quot;white containers&quot;, &quot;lamp&quot;]<br><b>bbox</b> [0.350, 0.100, 0.950, 0.700]<br><b>time</b> [0.000, 9.750]<br><b>IoU</b> 0.187 <b>area</b> 0.360 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_080/target_04__background_objects.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_128' data-reason='Unnatural morphing' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_128</h2>
+<div class='reason'>Unnatural morphing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Soccer match showing a ball kicked towards the goal with players and referee watching.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_128/human__box1__Unnatural_morphing.mp4'></video>
+<p><b>bbox</b> [0.427, 0.216, 0.620, 0.415]<br><b>time</b> [1.667, 1.667]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. soccer_ball</h4><p>Ball moving through air.</p>
+<p class='small'><b>sam_queries</b> [&quot;soccer ball&quot;]<br><b>bbox</b> [0.450, 0.250, 0.550, 0.450]<br><b>time</b> [0.000, 1.500]<br><b>IoU</b> 0.394 <b>area</b> 0.020 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_128/target_01__soccer_ball.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. referee_foreground</h4><p>Referee in yellow.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in yellow shirt&quot;]<br><b>bbox</b> [0.200, 0.400, 0.450, 0.950]<br><b>time</b> [0.000, 1.500]<br><b>IoU</b> 0.002 <b>area</b> 0.137 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_128/target_02__referee_foreground.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. goalkeeper_green</h4><p>Goalie in green.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in green shirt&quot;]<br><b>bbox</b> [0.600, 0.400, 0.800, 0.800]<br><b>time</b> [0.000, 1.500]<br><b>IoU</b> 0.002 <b>area</b> 0.080 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_128/target_03__goalkeeper_green.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. goal_net</h4><p>White net.</p>
+<p class='small'><b>sam_queries</b> [&quot;goal net&quot;]<br><b>bbox</b> [0.450, 0.250, 0.950, 0.800]<br><b>time</b> [0.000, 1.500]<br><b>IoU</b> 0.098 <b>area</b> 0.275 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_128/target_04__goal_net.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_186' data-reason='Unnatural motion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_186</h2>
+<div class='reason'>Unnatural motion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A basketball player in a blue jersey shoots a free throw, the ball goes through the hoop, and following a camera pan, another player in a yellow jersey is seen dribbling the ball.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_186/human__box1__Unnatural_motion.mp4'></video>
+<p><b>bbox</b> [0.070, 0.162, 0.515, 1.000]<br><b>time</b> [1.630, 4.500]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. shooter_player</h4><p>The player in the blue jersey (number 13) shooting the free throw.</p>
+<p class='small'><b>sam_queries</b> [&quot;basketball player in blue jersey&quot;, &quot;player number 13&quot;]<br><b>bbox</b> [0.450, 0.400, 0.650, 1.000]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.085 <b>area</b> 0.120 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_186/target_01__shooter_player.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. basketball</h4><p>The orange basketball throughout its flight, bounce, and subsequent dribbling.</p>
+<p class='small'><b>sam_queries</b> [&quot;orange basketball&quot;]<br><b>bbox</b> [0.450, 0.550, 0.550, 0.650]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.017 <b>area</b> 0.010 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_186/target_02__basketball.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. hoop_and_net</h4><p>The basketball hoop, rim, and net on the left side of the frame.</p>
+<p class='small'><b>sam_queries</b> [&quot;basketball hoop&quot;, &quot;basketball net&quot;, &quot;red rim&quot;]<br><b>bbox</b> [0.250, 0.150, 0.450, 0.450]<br><b>time</b> [0.000, 3.000]<br><b>IoU</b> 0.154 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_186/target_03__hoop_and_net.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. receiving_player</h4><p>The player in the yellow jersey who receives and dribbles the ball after the camera pan.</p>
+<p class='small'><b>sam_queries</b> [&quot;basketball player in yellow jersey dribbling&quot;]<br><b>bbox</b> [0.400, 0.400, 0.600, 0.900]<br><b>time</b> [5.000, 8.750]<br><b>IoU</b> 0.138 <b>area</b> 0.100 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_186/target_04__receiving_player.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. court_and_stanchion_text</h4><p>Text and logos on the basketball court floor and the stanchion/backboard.</p>
+<p class='small'><b>sam_queries</b> [&quot;text on basketball court&quot;, &quot;logos on floor&quot;, &quot;red sign on stanchion&quot;]<br><b>bbox</b> [0.000, 0.100, 1.000, 1.000]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.414 <b>area</b> 0.900 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_186/target_05__court_and_stanchion_text.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_221' data-reason='Obey physical world' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_221</h2>
+<div class='reason'>Obey physical world</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A man driving a car at night turns and points at a neon sign in a storefront window.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_221/human__box1__Obey_physical_world.mp4'></video>
+<p><b>bbox</b> [0.331, 0.308, 0.806, 0.928]<br><b>time</b> [3.000, 4.200]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. driver_face</h4><p>The face of the man driving the car.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s face&quot;, &quot;driver&#x27;s face&quot;, &quot;person wearing beanie&quot;]<br><b>bbox</b> [0.500, 0.400, 0.800, 0.700]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.306 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_221/target_01__driver_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. driver_hands_wheel</h4><p>The driver&#x27;s hands gripping the steering wheel.</p>
+<p class='small'><b>sam_queries</b> [&quot;hands on steering wheel&quot;, &quot;driver&#x27;s hands&quot;]<br><b>bbox</b> [0.500, 0.600, 0.800, 0.900]<br><b>time</b> [0.000, 3.000]<br><b>IoU</b> 0.306 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_221/target_02__driver_hands_wheel.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. pointing_hand_arm</h4><p>The driver&#x27;s right arm and hand pointing towards the neon sign.</p>
+<p class='small'><b>sam_queries</b> [&quot;pointing hand&quot;, &quot;man&#x27;s arm&quot;, &quot;hand with extended index finger&quot;]<br><b>bbox</b> [0.300, 0.500, 0.900, 0.900]<br><b>time</b> [3.000, 6.750]<br><b>IoU</b> 0.552 <b>area</b> 0.240 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_221/target_03__pointing_hand_arm.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. neon_sign_text</h4><p>The red neon sign with text in the storefront window.</p>
+<p class='small'><b>sam_queries</b> [&quot;neon sign&quot;, &quot;red text sign&quot;, &quot;illuminated letters&quot;]<br><b>bbox</b> [0.000, 0.200, 0.700, 0.800]<br><b>time</b> [4.000, 6.750]<br><b>IoU</b> 0.340 <b>area</b> 0.420 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_221/target_04__neon_sign_text.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. car_hood_reflections</h4><p>The reflections on the shiny black hood of the car.</p>
+<p class='small'><b>sam_queries</b> [&quot;car hood&quot;, &quot;reflections on car&quot;]<br><b>bbox</b> [0.000, 0.700, 1.000, 1.000]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.222 <b>area</b> 0.300 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_221/target_05__car_hood_reflections.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>06. watermark_text</h4><p>The text watermark in the top left corner.</p>
+<p class='small'><b>sam_queries</b> [&quot;text in top left&quot;, &quot;watermark&quot;]<br><b>bbox</b> [0.000, 0.000, 0.200, 0.100]<br><b>time</b> [0.000, 6.750]<br><b>IoU</b> 0.000 <b>area</b> 0.020 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_221/target_06__watermark_text.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='fake_223' data-reason='Object change' data-strict-miss='false'>
+<div class='case-head'>
+<h2>fake_223</h2>
+<div class='reason'>Object change</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A person carrying a long object walks past a burning wooden building and a well at night.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_223/human__box1__Object_change.mp4'></video>
+<p><b>bbox</b> [0.309, 0.744, 0.517, 0.985]<br><b>time</b> [1.400, 3.300]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. person_walking</h4><p>The figure in dark clothing walking from right to left.</p>
+<p class='small'><b>sam_queries</b> [&quot;person walking&quot;, &quot;figure in dark coat&quot;]<br><b>bbox</b> [0.400, 0.500, 0.650, 0.900]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.138 <b>area</b> 0.100 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_223/target_01__person_walking.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. held_object</h4><p>The long pole or weapon held by the walking person.</p>
+<p class='small'><b>sam_queries</b> [&quot;long pole&quot;, &quot;object held by person&quot;]<br><b>bbox</b> [0.400, 0.400, 0.650, 0.800]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.046 <b>area</b> 0.100 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_223/target_02__held_object.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. building_fire</h4><p>Flames and smoke emerging from the wooden building.</p>
+<p class='small'><b>sam_queries</b> [&quot;fire on building&quot;, &quot;flames&quot;, &quot;smoke&quot;]<br><b>bbox</b> [0.000, 0.100, 0.400, 0.800]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.016 <b>area</b> 0.280 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_223/target_03__building_fire.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. ground_fire</h4><p>The pile of burning wood on the ground.</p>
+<p class='small'><b>sam_queries</b> [&quot;fire on ground&quot;, &quot;burning wood pile&quot;]<br><b>bbox</b> [0.100, 0.600, 0.400, 0.900]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.113 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_223/target_04__ground_fire.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. well_structure</h4><p>The large wooden well structure with a wheel.</p>
+<p class='small'><b>sam_queries</b> [&quot;wooden well&quot;, &quot;wheel&quot;, &quot;rope&quot;]<br><b>bbox</b> [0.500, 0.000, 0.950, 0.900]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.006 <b>area</b> 0.405 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_223/target_05__well_structure.mp4'></video>
+</div>
+</section></div>
+</article><article class='case strict-miss' data-video='fake_228' data-reason='Object morphing' data-strict-miss='true'>
+<div class='case-head'>
+<h2>fake_228</h2>
+<div class='reason'>Object morphing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge miss'>strict ST: miss</span>
+</div></div>
+<p class='scene'>A woman at a buffet line scoops red peppers onto her plate of rice, then turns to smile and speak to the camera while others wait in line behind her.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/fake_228/human__box1__Object_morphing.mp4'></video>
+<p><b>bbox</b> [0.379, 0.441, 0.544, 0.691]<br><b>time</b> [5.580, 9.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. woman_hands_spoon</h4><p>The woman&#x27;s hands holding the white plate and the serving spoon, scooping red peppers from the tray.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman&#x27;s hands&quot;, &quot;serving spoon&quot;, &quot;hand holding spoon&quot;]<br><b>bbox</b> [0.450, 0.350, 0.950, 0.950]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.074 <b>area</b> 0.300 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_228/target_01__woman_hands_spoon.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. plate_food</h4><p>The white plate held by the woman and the food accumulating on it (rice and red peppers).</p>
+<p class='small'><b>sam_queries</b> [&quot;white plate&quot;, &quot;rice on plate&quot;, &quot;red peppers on plate&quot;]<br><b>bbox</b> [0.450, 0.550, 0.950, 0.950]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.058 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_228/target_02__plate_food.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. woman_face</h4><p>The face of the main woman in the blue shirt as she turns to the camera and speaks.</p>
+<p class='small'><b>sam_queries</b> [&quot;woman&#x27;s face&quot;, &quot;woman in blue shirt&quot;]<br><b>bbox</b> [0.550, 0.150, 0.850, 0.650]<br><b>time</b> [3.500, 8.750]<br><b>IoU</b> 0.000 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_228/target_03__woman_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. background_people</h4><p>The people standing in line behind the main woman, including the woman in the black cap and the man behind her.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in black cap&quot;, &quot;man in black shirt&quot;, &quot;people in background&quot;]<br><b>bbox</b> [0.450, 0.150, 0.950, 0.750]<br><b>time</b> [3.500, 8.750]<br><b>IoU</b> 0.074 <b>area</b> 0.300 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_228/target_04__background_people.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. buffet_trays</h4><p>The stainless steel trays containing various foods in the buffet line, and the glass sneeze guard above them.</p>
+<p class='small'><b>sam_queries</b> [&quot;food trays&quot;, &quot;buffet food&quot;, &quot;stainless steel containers&quot;, &quot;glass guard&quot;]<br><b>bbox</b> [0.150, 0.350, 0.850, 0.950]<br><b>time</b> [0.000, 8.750]<br><b>IoU</b> 0.098 <b>area</b> 0.420 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/fake_228/target_05__buffet_trays.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000023_youtube_fe086902' data-reason='Obey physical world' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000023_youtube_fe086902</h2>
+<div class='reason'>Obey physical world</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A hand uses a knife to slice into a whole watermelon on a wooden cutting board, resulting in a splash of liquid and revealing the interior, after which another hand touches the top of the watermelon.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000023_youtube_fe086902/human__box1__Obey_physical_world.mp4'></video>
+<p><b>bbox</b> [0.108, 0.056, 0.645, 0.923]<br><b>time</b> [3.500, 6.267]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. knife_blade</h4><p>The metal blade of the knife as it presses into and cuts the watermelon.</p>
+<p class='small'><b>sam_queries</b> [&quot;metal knife blade&quot;, &quot;knife cutting watermelon&quot;]<br><b>bbox</b> [0.150, 0.000, 0.700, 0.400]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.331 <b>area</b> 0.220 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000023_youtube_fe086902/target_01__knife_blade.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. watermelon_interior</h4><p>The exposed red flesh and internal cavity of the watermelon after the cut is made.</p>
+<p class='small'><b>sam_queries</b> [&quot;red watermelon flesh&quot;, &quot;inside of cut watermelon&quot;, &quot;watermelon cavity&quot;]<br><b>bbox</b> [0.400, 0.400, 0.700, 0.900]<br><b>time</b> [2.500, 6.000]<br><b>IoU</b> 0.248 <b>area</b> 0.150 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000023_youtube_fe086902/target_02__watermelon_interior.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. splash_debris</h4><p>The liquid and solid chunks that explode outward when the knife breaches the watermelon.</p>
+<p class='small'><b>sam_queries</b> [&quot;flying red liquid&quot;, &quot;watermelon chunks&quot;, &quot;splash particles&quot;]<br><b>bbox</b> [0.300, 0.300, 0.900, 1.000]<br><b>time</b> [2.000, 4.000]<br><b>IoU</b> 0.320 <b>area</b> 0.420 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000023_youtube_fe086902/target_03__splash_debris.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. hand_holding_knife</h4><p>The right hand gripping the black handle of the knife.</p>
+<p class='small'><b>sam_queries</b> [&quot;hand holding knife handle&quot;, &quot;fingers gripping knife&quot;]<br><b>bbox</b> [0.650, 0.000, 1.000, 0.300]<br><b>time</b> [0.000, 4.000]<br><b>IoU</b> 0.000 <b>area</b> 0.105 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000023_youtube_fe086902/target_04__hand_holding_knife.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. second_hand</h4><p>The left hand that enters the frame to touch the top of the watermelon.</p>
+<p class='small'><b>sam_queries</b> [&quot;hand touching watermelon&quot;, &quot;left hand&quot;]<br><b>bbox</b> [0.100, 0.000, 0.500, 0.400]<br><b>time</b> [5.000, 6.000]<br><b>IoU</b> 0.275 <b>area</b> 0.160 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000023_youtube_fe086902/target_05__second_hand.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000039_manual_b3e28986' data-reason='Extra limb' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000039_manual_b3e28986</h2>
+<div class='reason'>Extra limb</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Polar bear opens a fridge in a snowy landscape, retrieves an object, and holds it in its mouth.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000039_manual_b3e28986/human__box1__Extra_limb.mp4'></video>
+<p><b>bbox</b> [0.235, 0.303, 0.685, 0.943]<br><b>time</b> [2.420, 4.339]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. bear_front_paws</h4><p>Bear&#x27;s front paws interacting with fridge and object.</p>
+<p class='small'><b>sam_queries</b> [&quot;polar bear paws&quot;, &quot;bear claws&quot;, &quot;front legs&quot;]<br><b>bbox</b> [0.400, 0.300, 0.700, 0.900]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.572 <b>area</b> 0.180 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000039_manual_b3e28986/target_01__bear_front_paws.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. retrieved_object</h4><p>Cylindrical object taken from fridge.</p>
+<p class='small'><b>sam_queries</b> [&quot;cylindrical object&quot;, &quot;frozen bottle&quot;, &quot;ice block&quot;]<br><b>bbox</b> [0.500, 0.300, 0.700, 0.600]<br><b>time</b> [0.750, 4.750]<br><b>IoU</b> 0.188 <b>area</b> 0.060 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000039_manual_b3e28986/target_02__retrieved_object.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. refrigerator_door</h4><p>Fridge door opening, closing, and reopening.</p>
+<p class='small'><b>sam_queries</b> [&quot;refrigerator door&quot;, &quot;fridge&quot;, &quot;metal door&quot;]<br><b>bbox</b> [0.550, 0.200, 0.850, 0.850]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.181 <b>area</b> 0.195 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000039_manual_b3e28986/target_03__refrigerator_door.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. bear_head_mouth</h4><p>Bear&#x27;s head and mouth holding the object.</p>
+<p class='small'><b>sam_queries</b> [&quot;polar bear head&quot;, &quot;bear mouth&quot;, &quot;snout&quot;]<br><b>bbox</b> [0.400, 0.200, 0.700, 0.500]<br><b>time</b> [2.000, 4.750]<br><b>IoU</b> 0.175 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000039_manual_b3e28986/target_04__bear_head_mouth.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000319_manual_0818bd26' data-reason='Body distortion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000319_manual_0818bd26</h2>
+<div class='reason'>Body distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>People gather on a rooftop with a reflective surface at sunset, while a drone flies nearby.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/human__box1__Body_distortion.mp4'></video>
+<p><b>bbox</b> [0.210, 0.255, 0.394, 0.745]<br><b>time</b> [2.778, 2.900]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. flying_drone</h4><p>Small drone flying in the sky on the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;drone&quot;, &quot;flying object in sky&quot;]<br><b>bbox</b> [0.050, 0.050, 0.150, 0.200]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.000 <b>area</b> 0.015 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_01__flying_drone.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. person_walking_right</h4><p>Person in white tank top and dark pants walking from the right.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in white tank top&quot;, &quot;person walking on right&quot;]<br><b>bbox</b> [0.600, 0.450, 0.800, 0.900]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.000 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_02__person_walking_right.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. person_walking_left</h4><p>Person in white t-shirt and dark shorts walking from the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in white t-shirt&quot;, &quot;person walking on left&quot;]<br><b>bbox</b> [0.250, 0.450, 0.450, 0.900]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.308 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_03__person_walking_left.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. ground_reflections</h4><p>Reflective surface on the ground and the reflections of the people.</p>
+<p class='small'><b>sam_queries</b> [&quot;reflective surface&quot;, &quot;reflections of people&quot;]<br><b>bbox</b> [0.150, 0.650, 0.850, 0.950]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.062 <b>area</b> 0.210 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_04__ground_reflections.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. central_group</h4><p>Main group of people standing in the center.</p>
+<p class='small'><b>sam_queries</b> [&quot;group of people&quot;, &quot;people standing&quot;]<br><b>bbox</b> [0.350, 0.450, 0.650, 0.850]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.065 <b>area</b> 0.120 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_05__central_group.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000319_manual_0818bd26' data-reason='Object disappearing' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000319_manual_0818bd26</h2>
+<div class='reason'>Object disappearing</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>People gather on a rooftop with a reflective surface at sunset, while a drone flies nearby.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/human__box2__Object_disappearing.mp4'></video>
+<p><b>bbox</b> [0.227, 0.307, 0.431, 0.698]<br><b>time</b> [1.660, 3.750]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. flying_drone</h4><p>Small drone flying in the sky on the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;drone&quot;, &quot;flying object in sky&quot;]<br><b>bbox</b> [0.050, 0.050, 0.150, 0.200]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.000 <b>area</b> 0.015 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_01__flying_drone.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. person_walking_right</h4><p>Person in white tank top and dark pants walking from the right.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in white tank top&quot;, &quot;person walking on right&quot;]<br><b>bbox</b> [0.600, 0.450, 0.800, 0.900]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.000 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_02__person_walking_right.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. person_walking_left</h4><p>Person in white t-shirt and dark shorts walking from the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;person in white t-shirt&quot;, &quot;person walking on left&quot;]<br><b>bbox</b> [0.250, 0.450, 0.450, 0.900]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.360 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_03__person_walking_left.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. ground_reflections</h4><p>Reflective surface on the ground and the reflections of the people.</p>
+<p class='small'><b>sam_queries</b> [&quot;reflective surface&quot;, &quot;reflections of people&quot;]<br><b>bbox</b> [0.150, 0.650, 0.850, 0.950]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.035 <b>area</b> 0.210 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_04__ground_reflections.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. central_group</h4><p>Main group of people standing in the center.</p>
+<p class='small'><b>sam_queries</b> [&quot;group of people&quot;, &quot;people standing&quot;]<br><b>bbox</b> [0.350, 0.450, 0.650, 0.850]<br><b>time</b> [0.000, 9.000]<br><b>IoU</b> 0.112 <b>area</b> 0.120 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000319_manual_0818bd26/target_05__central_group.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='FAIL_000338_manual_0ddf9dea' data-reason='Obey physical world' data-strict-miss='false'>
+<div class='case-head'>
+<h2>FAIL_000338_manual_0ddf9dea</h2>
+<div class='reason'>Obey physical world</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A basketball bounces across an outdoor court in front of a standing person.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000338_manual_0ddf9dea/human__box1__Obey_physical_world.mp4'></video>
+<p><b>bbox</b> [0.107, 0.052, 0.841, 0.708]<br><b>time</b> [4.800, 5.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. basketball</h4><p>The orange basketball bouncing across the frame.</p>
+<p class='small'><b>sam_queries</b> [&quot;basketball&quot;, &quot;orange ball&quot;]<br><b>bbox</b> [0.100, 0.100, 0.800, 0.600]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.714 <b>area</b> 0.350 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000338_manual_0ddf9dea/target_01__basketball.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. ball_shadow</h4><p>The shadow cast by the bouncing basketball on the court surface.</p>
+<p class='small'><b>sam_queries</b> [&quot;shadow of ball&quot;, &quot;dark shadow on ground&quot;]<br><b>bbox</b> [0.100, 0.300, 0.900, 0.800]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.515 <b>area</b> 0.400 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000338_manual_0ddf9dea/target_02__ball_shadow.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. person_legs</h4><p>The legs and feet of the person standing in the background.</p>
+<p class='small'><b>sam_queries</b> [&quot;person&#x27;s legs&quot;, &quot;black pants&quot;, &quot;shoes&quot;]<br><b>bbox</b> [0.400, 0.000, 0.900, 0.400]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.291 <b>area</b> 0.200 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000338_manual_0ddf9dea/target_03__person_legs.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. court_lines</h4><p>The painted white lines and textured surface of the basketball court.</p>
+<p class='small'><b>sam_queries</b> [&quot;white painted lines&quot;, &quot;basketball court ground&quot;]<br><b>bbox</b> [0.000, 0.200, 1.000, 1.000]<br><b>time</b> [0.000, 4.750]<br><b>IoU</b> 0.411 <b>area</b> 0.800 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/FAIL_000338_manual_0ddf9dea/target_04__court_lines.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='real_014' data-reason='Face distortion' data-strict-miss='false'>
+<div class='case-head'>
+<h2>real_014</h2>
+<div class='reason'>Face distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>Professor writes on chalkboard, camera pans to seated students.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/real_014/human__box1__Face_distortion.mp4'></video>
+<p><b>bbox</b> [0.481, 0.212, 0.759, 0.760]<br><b>time</b> [4.850, 5.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. professor_face</h4><p>Man&#x27;s face in profile.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s face&quot;, &quot;glasses&quot;, &quot;grey hair&quot;]<br><b>bbox</b> [0.150, 0.100, 0.350, 0.400]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.000 <b>area</b> 0.060 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_01__professor_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. writing_hand</h4><p>Hand holding chalk.</p>
+<p class='small'><b>sam_queries</b> [&quot;hand holding chalk&quot;, &quot;right hand&quot;]<br><b>bbox</b> [0.500, 0.300, 0.650, 0.500]<br><b>time</b> [0.000, 2.500]<br><b>IoU</b> 0.197 <b>area</b> 0.030 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_02__writing_hand.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. chalkboard_equations</h4><p>Math symbols on board.</p>
+<p class='small'><b>sam_queries</b> [&quot;chalk writing&quot;, &quot;math equations&quot;]<br><b>bbox</b> [0.400, 0.000, 0.900, 0.600]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.313 <b>area</b> 0.300 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_03__chalkboard_equations.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. professor_shadow</h4><p>Shadow on green board.</p>
+<p class='small'><b>sam_queries</b> [&quot;shadow on board&quot;]<br><b>bbox</b> [0.600, 0.100, 0.950, 0.900]<br><b>time</b> [0.000, 2.000]<br><b>IoU</b> 0.253 <b>area</b> 0.280 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_04__professor_shadow.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. students_faces</h4><p>Students sitting at desks.</p>
+<p class='small'><b>sam_queries</b> [&quot;student faces&quot;, &quot;people sitting&quot;]<br><b>bbox</b> [0.000, 0.400, 0.700, 0.900]<br><b>time</b> [1.750, 4.750]<br><b>IoU</b> 0.186 <b>area</b> 0.350 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_05__students_faces.mp4'></video>
+</div>
+</section></div>
+</article><article class='case strict-miss' data-video='real_014' data-reason='Face distortion' data-strict-miss='true'>
+<div class='case-head'>
+<h2>real_014</h2>
+<div class='reason'>Face distortion</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge miss'>strict ST: miss</span>
+</div></div>
+<p class='scene'>Professor writes on chalkboard, camera pans to seated students.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/real_014/human__box2__Face_distortion.mp4'></video>
+<p><b>bbox</b> [0.105, 0.060, 0.465, 0.489]<br><b>time</b> [4.559, 5.042]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. professor_face</h4><p>Man&#x27;s face in profile.</p>
+<p class='small'><b>sam_queries</b> [&quot;man&#x27;s face&quot;, &quot;glasses&quot;, &quot;grey hair&quot;]<br><b>bbox</b> [0.150, 0.100, 0.350, 0.400]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.389 <b>area</b> 0.060 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_01__professor_face.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. writing_hand</h4><p>Hand holding chalk.</p>
+<p class='small'><b>sam_queries</b> [&quot;hand holding chalk&quot;, &quot;right hand&quot;]<br><b>bbox</b> [0.500, 0.300, 0.650, 0.500]<br><b>time</b> [0.000, 2.500]<br><b>IoU</b> 0.000 <b>area</b> 0.030 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_02__writing_hand.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. chalkboard_equations</h4><p>Math symbols on board.</p>
+<p class='small'><b>sam_queries</b> [&quot;chalk writing&quot;, &quot;math equations&quot;]<br><b>bbox</b> [0.400, 0.000, 0.900, 0.600]<br><b>time</b> [0.000, 3.500]<br><b>IoU</b> 0.065 <b>area</b> 0.300 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_03__chalkboard_equations.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. professor_shadow</h4><p>Shadow on green board.</p>
+<p class='small'><b>sam_queries</b> [&quot;shadow on board&quot;]<br><b>bbox</b> [0.600, 0.100, 0.950, 0.900]<br><b>time</b> [0.000, 2.000]<br><b>IoU</b> 0.000 <b>area</b> 0.280 <b>time_overlap</b> False</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_04__professor_shadow.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. students_faces</h4><p>Students sitting at desks.</p>
+<p class='small'><b>sam_queries</b> [&quot;student faces&quot;, &quot;people sitting&quot;]<br><b>bbox</b> [0.000, 0.400, 0.700, 0.900]<br><b>time</b> [1.750, 4.750]<br><b>IoU</b> 0.068 <b>area</b> 0.350 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_014/target_05__students_faces.mp4'></video>
+</div>
+</section></div>
+</article><article class='case' data-video='real_166' data-reason='Unreadable text' data-strict-miss='false'>
+<div class='case-head'>
+<h2>real_166</h2>
+<div class='reason'>Unreadable text</div>
+<div class='badges'>
+<span class='badge ok'>loose ST: hit</span>
+<span class='badge ok'>strict ST: hit</span>
+</div></div>
+<p class='scene'>A simulated UI animation showing a social media app on a smartphone, followed by a tablet sliding in to display a similar interface, with both screens showing scrolling content.</p>
+<div class='compare'>
+<section class='human'><h3>Human crop</h3>
+<video controls muted preload='metadata' src='assets/heldout/real_166/human__box1__Unreadable_text.mp4'></video>
+<p><b>bbox</b> [0.102, 0.047, 0.618, 0.819]<br><b>time</b> [2.800, 2.804]</p>
+</section>
+<section class='targets'><h3>Planner targets / model answer</h3>
+<div class='target'>
+<div class='target-meta'>
+<h4>01. smartphone_interface</h4><p>The display area of the smartphone on the left.</p>
+<p class='small'><b>sam_queries</b> [&quot;smartphone screen&quot;, &quot;phone display&quot;]<br><b>bbox</b> [0.100, 0.000, 0.600, 1.000]<br><b>time</b> [0.000, 8.000]<br><b>IoU</b> 0.749 <b>area</b> 0.500 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_166/target_01__smartphone_interface.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>02. tablet_interface</h4><p>The display area of the tablet that slides in from the right.</p>
+<p class='small'><b>sam_queries</b> [&quot;tablet screen&quot;, &quot;large device display&quot;]<br><b>bbox</b> [0.500, 0.000, 1.000, 1.000]<br><b>time</b> [1.500, 8.000]<br><b>IoU</b> 0.113 <b>area</b> 0.500 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_166/target_02__tablet_interface.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>03. phone_top_bar</h4><p>The green header bar at the top of the smartphone screen.</p>
+<p class='small'><b>sam_queries</b> [&quot;green header bar&quot;, &quot;top navigation bar&quot;]<br><b>bbox</b> [0.150, 0.000, 0.600, 0.200]<br><b>time</b> [0.000, 8.000]<br><b>IoU</b> 0.164 <b>area</b> 0.090 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_166/target_03__phone_top_bar.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>04. phone_content_feed</h4><p>The scrolling area containing images and text on the smartphone.</p>
+<p class='small'><b>sam_queries</b> [&quot;scrolling content&quot;, &quot;images and text on phone&quot;]<br><b>bbox</b> [0.150, 0.200, 0.600, 0.900]<br><b>time</b> [0.000, 8.000]<br><b>IoU</b> 0.641 <b>area</b> 0.315 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_166/target_04__phone_content_feed.mp4'></video>
+</div>
+<div class='target'>
+<div class='target-meta'>
+<h4>05. tablet_content_feed</h4><p>The scrolling area containing images and text on the tablet.</p>
+<p class='small'><b>sam_queries</b> [&quot;scrolling content on tablet&quot;, &quot;images and text on tablet&quot;]<br><b>bbox</b> [0.550, 0.100, 0.950, 0.900]<br><b>time</b> [2.000, 8.000]<br><b>IoU</b> 0.073 <b>area</b> 0.320 <b>time_overlap</b> True</p>
+</div>
+<video controls muted preload='metadata' src='assets/heldout/real_166/target_05__tablet_content_feed.mp4'></video>
+</div>
+</section></div>
+</article></section>
+  </main>
+  <script>
+    const search = document.getElementById('search');
+    const missOnly = document.getElementById('missOnly');
+    function update() {
+      const q = search.value.toLowerCase();
+      const only = missOnly.checked;
+      for (const card of document.querySelectorAll('.case')) {
+        const text = card.innerText.toLowerCase();
+        const isMiss = card.dataset.strictMiss === 'true';
+        card.style.display = ((!only || isMiss) && (!q || text.includes(q))) ? '' : 'none';
+      }
+    }
+    search.addEventListener('input', update);
+    missOnly.addEventListener('change', update);
+  </script>
+</body>
+</html>
