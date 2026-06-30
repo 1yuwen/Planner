@@ -21,11 +21,15 @@
     header { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--line); padding: 14px 20px; }
     header h1 { margin: 0 0 10px; font-size: 20px; }
     .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    button { padding: 8px 11px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--text); cursor: pointer; }
+    button:disabled { opacity: 0.45; cursor: default; }
+    .page-info { min-width: 72px; text-align: center; font-weight: 700; color: var(--muted); }
     input[type="search"] { width: min(520px, 80vw); padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
     main { padding: 18px 20px 40px; }
     .summary { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
     .summary-card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 220px; }
     .summary-card h3, .summary-card p { margin: 4px 0; }
+    .no-results { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; color: var(--muted); }
     .set > h1 { font-size: 18px; margin: 20px 0 10px; }
     .case { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; margin: 14px 0; padding: 14px; }
     .case.strict-miss { border-left: 5px solid var(--miss); }
@@ -58,12 +62,16 @@
   <header>
     <h1>Attention Planner Viewer</h1>
     <div class="controls">
+      <button id="prevPage" type="button">Previous</button>
+      <span id="pageInfo" class="page-info">0 / 0</span>
+      <button id="nextPage" type="button">Next</button>
       <input id="search" type="search" placeholder="Search video, reason, target, sam query">
       <label><input id="missOnly" type="checkbox"> strict misses only</label>
     </div>
   </header>
   <main>
     <section class="summary"><div class='summary-card'><h3>train</h3><p><b>GT</b> 25 &nbsp; <b>targets</b> 114</p><p><b>loose ST</b> 24/25 (96%)</p><p><b>strict ST</b> 22/25 (88%)</p></div><div class='summary-card'><h3>heldout</h3><p><b>GT</b> 19 &nbsp; <b>targets</b> 92</p><p><b>loose ST</b> 19/19 (100%)</p><p><b>strict ST</b> 17/19 (89%)</p></div></section>
+    <div id="noResults" class="no-results" hidden>No matching cases.</div>
     <section class='set'><h1>train</h1><article class='case' data-video='fake_004' data-reason='Hand distortion' data-strict-miss='false'>
 <div class='case-head'>
 <h2>fake_004</h2>
@@ -2215,17 +2223,72 @@
   <script>
     const search = document.getElementById('search');
     const missOnly = document.getElementById('missOnly');
-    function update() {
-      const q = search.value.toLowerCase();
-      const only = missOnly.checked;
-      for (const card of document.querySelectorAll('.case')) {
-        const text = card.innerText.toLowerCase();
-        const isMiss = card.dataset.strictMiss === 'true';
-        card.style.display = ((!only || isMiss) && (!q || text.includes(q))) ? '' : 'none';
+    const prevPage = document.getElementById('prevPage');
+    const nextPage = document.getElementById('nextPage');
+    const pageInfo = document.getElementById('pageInfo');
+    const noResults = document.getElementById('noResults');
+    const cases = Array.from(document.querySelectorAll('.case'));
+    const sectionHeads = Array.from(document.querySelectorAll('.set > h1'));
+    let filteredCases = [];
+    let currentIndex = 0;
+
+    function pauseVideos() {
+      for (const video of document.querySelectorAll('video')) {
+        video.pause();
       }
     }
+
+    function matchingCases() {
+      const q = search.value.toLowerCase();
+      const only = missOnly.checked;
+      return cases.filter((card) => {
+        const text = card.innerText.toLowerCase();
+        const isMiss = card.dataset.strictMiss === 'true';
+        return (!only || isMiss) && (!q || text.includes(q));
+      });
+    }
+
+    function renderPage(index) {
+      filteredCases = matchingCases();
+      if (index < 0) index = filteredCases.length - 1;
+      if (index >= filteredCases.length) index = 0;
+      currentIndex = index;
+
+      pauseVideos();
+      for (const card of cases) card.style.display = 'none';
+      for (const head of sectionHeads) head.style.display = 'none';
+
+      if (!filteredCases.length) {
+        noResults.hidden = false;
+        pageInfo.textContent = '0 / 0';
+        prevPage.disabled = true;
+        nextPage.disabled = true;
+        return;
+      }
+
+      noResults.hidden = true;
+      const card = filteredCases[currentIndex];
+      card.style.display = '';
+      const sectionHead = card.closest('.set')?.querySelector(':scope > h1');
+      if (sectionHead) sectionHead.style.display = '';
+      pageInfo.textContent = `${currentIndex + 1} / ${filteredCases.length}`;
+      prevPage.disabled = filteredCases.length <= 1;
+      nextPage.disabled = filteredCases.length <= 1;
+    }
+
+    function update() {
+      renderPage(0);
+    }
+    prevPage.addEventListener('click', () => renderPage(currentIndex - 1));
+    nextPage.addEventListener('click', () => renderPage(currentIndex + 1));
     search.addEventListener('input', update);
     missOnly.addEventListener('change', update);
+    document.addEventListener('keydown', (event) => {
+      if (event.target instanceof HTMLInputElement) return;
+      if (event.key === 'ArrowLeft') renderPage(currentIndex - 1);
+      if (event.key === 'ArrowRight') renderPage(currentIndex + 1);
+    });
+    update();
   </script>
 </body>
 </html>
