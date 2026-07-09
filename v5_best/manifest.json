@@ -1,0 +1,24 @@
+{
+  "settings": {
+    "crop_pad": 0.8,
+    "recall_thresh": 0.95,
+    "strict_iou": 0.45,
+    "strict_text_iou": 0.3,
+    "strict_time_iou": 0.15,
+    "strict_max_center_area": 0.12,
+    "human_crop_time": "gt"
+  },
+  "sets": [
+    {
+      "label": "v5_best_round8",
+      "plans_json": "results/planner_runs/auto_loop_v5/round_8/plans.json",
+      "split_csv": "",
+      "total": 109,
+      "targets": 451,
+      "loose_spatial_hits": 78,
+      "loose_st_hits": 68,
+      "strict_spatial_hits": 63,
+      "strict_st_hits": 56
+    }
+  ]
+}
